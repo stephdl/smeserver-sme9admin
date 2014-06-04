@@ -282,11 +282,11 @@ sub accueil
                     "#".gettext("Administrative services"), "sshd", "sme9admind",
                     "#".gettext("Network services"),"wan","dhcpd","pptpd","ippp", 
                     "#".gettext("File-sharing services"),"smb","smbd","nmbd","ftp", 
-                    "#".gettext("E-mail services"),"pop3","pop3s","imap","imaps","qmail","qpsmtpd","sqpsmtpd", "clamd", "freshclam","spamd",#mail
+                    "#".gettext("E-mail services"),"pop3","pop3s","dovecot","qmail","qpsmtpd","sqpsmtpd", "clamd", "freshclam","spamd",#mail
                     "#".gettext("DNS services"),"tinydns","dnscache", #dns
                     "#".gettext("Authentication services"),"oidentd","ldap","smtp-auth-proxy","radiusd", #auth
                     "#".gettext("Misc. services"),"mysqld","ntpd","lpd", #misc
-                    "#".gettext("System services"),"crond","syslog","ulogd","acpid","raidmonitor"); #sys et materiel
+                    "#".gettext("System services"),"crond","rsyslog","ulogd","acpid","raidmonitor"); #sys et materiel
 
     #hack pour la mise en forme : a) debut 1er case a gauche
     print $q->start_table,$q->start_Tr,$q->start_td;
@@ -1405,7 +1405,7 @@ sub showNetGraph
 		"COMMENT:Last\\:",'GPRINT:bin:LAST:%8.2lf %sb/s','GPRINT:bout:LAST:%8.2lf %sb/s',"COMMENT:\\n");
 
     #si on a une 2e interface reseay
-    if ($ExternalInterface ne "")
+    if ( defined $ExternalInterface )
     {
 	    #trafic sur l'interface cote reseau externe	
 	    createShowGraph(gettext("Load on the external network interface (to internet)."),"if_ext",
