@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
+
+<head>
+<link rel="stylesheet" type="text/css" href="/server-common/css/sme_core.css" />
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+
+<title> Documentation Sme8admin </title>
+</head>
+<body>
+
+<h3> Documentation Sme8admin </h3>
+<p>
+<b> Auteur :</b> Landry Breuil <br />
+<b> Date de cr&eacute;ation de cette doc :</b> 29/01/2006 <br />
+<b> Version de Sme8admin correspondante :</b> 1.1.0-1 <br />
+<b> Versions de SME test&eacute;es avec Sme8admin :</b> 7b5, 7pre1 <br />
+
+<p><i> Pourquoi cette contrib ? </i>:
+<br />Pouvoir voir en un coup d'oeil ce qu'il se passe sur le serveur sans avoir &agrave; utiliser la console d'administration par ssh. L'accueil de la contrib est accessible dans le server-manager d'SME &agrave; l'onglet <code>Sme8admin</code>. Cette contrib est l'&eacute;volution de sme6admin pour SME7, et &agrave; &eacute;t&eacute; r&eacute;&eacute;crite presque totalement.
+</p>
+
+<p><i> Description des diff&eacute;rentes pages </i>:
+<ul>
+<li />Liste des informations fournies par la page d'accueil de la contrib :
+<ul>
+   <li />Des liens vers les pages comportants les graphes d'activit&eacute; du syst&egrave;me expliqu&eacute;s juste apr&egrave;s, ainsi qu'un lien vers la page permettant de configurer sme8admin. 
+   <li />Le r&eacute;sultat de la commande <code>netstat</code> qui permet de voir quelles sont les connexions tcp ouvertes sur le serveur. On distingue les connexions vers l'exterieur/interieur.
+   <li />Le r&eacute;sultat de la commande <code>w</code> qui permet de voir les utilisateurs connect&eacute;s directement sur le serveur, depuis quand, &agrave; partir d'o&ugrave; et quelle &eacute;tait la derni&egrave;re commande lanc&eacute;e. 
+   <li />Le status des principaux services tournant sur le syst&egrave;me, avec le nombre de processus unix associ&eacute;s. Le bouton &agrave; droite permet d'arr&ecirc;ter/d&eacute;marrer un service. (Ce qui correspond &agrave; la commande <code> service xx stop/start</code>)
+   <br />Certains des noms des services sont des liens vers des pages comportants plus de détails sur le service en question.
+   <li />Le r&eacute;sultat de la commande <code>netstat --listen -tp</code> qui permet de voir la liste des processus en attente de connexion. 
+   <li />On &agrave; ensuite la date de la derni&egrave;re mise &agrave; jour de la base de virus de ClamAV, ainsi que le nombre de virus contre lesquels on est prot&eacute;g&eacute;s.
+   
+</ul>
+<br /><li />Page de graphes sur l'&eacute;tat du mat&eacute;riel :
+<ul>
+   <li />Un graphe comportant les temp&eacute;ratures du processeur et de la carte m&egrave;re detect&eacute;es par lm_sensors, ainsi que celle des disques durs avec hddtemp.
+	<li />Un graphe avec la vitesse de rotation du ventilateur du processeur.
+	<br /><b>(Il faut noter que ces valeurs d&eacute;pendent enti&egrave;rement du support de votre mat&eacute;riel par lm_sensors et hddtemp. De plus, il faut configurer correctement Sme8admin 
+   si l'on veut que les graphes se remplissent.)</b>
+	<br />On peut avoir ces graphes sur diff&eacute;rentes dur&eacute;es en suivant les liens du haut de la page.
+</ul>
+<br /><li />Page de graphes sur l'utilisation du r&eacute;seau :
+<ul>
+<li />Un graphe sur les sessions r&eacute;seau ouvertes. On monitore les connexions ftp, ssh, netbios, afp et vpn. Ces courbes correspondent au nombre de connexions tcp ouvertes sur ces services aux ports 21,22,139,548 et 1723.
+<li />Un graphe avec le nombre de renouvellement de bails dhcp et le nombre de connexions samba. Il permet de mesurer l'utilisation du r&eacute;seau local. Les connexions samba diff&egrave;rent ici des connexions netbios par le fait qu'un poste client peut &ecirc;tre connect&eacute; &agrave; plusieurs partages samba en m&ecirc;me temps, cela ne donne qu'une connexion netbios et plusieurs "connexions" samba.
+<li />Un graphe avec le nombre de mails entrant/sortant (valeurs empil&eacute;es) sur le serveur. Par d&eacute;faut, on ne g&egrave;re que les e-mails arrivant sur le domaine principal du serveur, sur les domaines virtuels du serveur, ainsi que les mails relay&eacute;s par fetchmail sur des boites locales. On peut ajouter des domaines en configurant Sme8admin, mais les e-mails ne seront d&eacute;tect&eacute;s que s'ils transitent par le serveur de messagerie de SME. On a aussi le nombre de spams rejet&eacute;s par Spamassassin et le nombre de virus filtr&eacute;s par ClamAV.
+<li />Un graphe montrant le temps de r&eacute;ponse de la passerelle par d&eacute;faut vers internet. La cible du ping est configurable, car il peut &ecirc;tre utile lorsqu'on n'est pas "en frontal" sur internet de tester la latence avec un quelconque autre site, et pas avec la passerelle par d&eacute;faut. Si le ping d&eacute;passe 200ms, on bride la valeur pour que le graphe reste "lisible". (ie, si on a un ping de 4s, on aurait un pic sur le graphe et rien &agrave; cot&eacute;.)
+<li />Deux graphes montrant le volume du trafic r&eacute;seau brut passant par le serveur. Souvent, le volume entrant sur l'interface externe correspond au volume sortant sur l'interface interne, c'est tout le trafic relay&eacute; par la passerelle vers le r&eacute;seau local. On peut voir sur un troisi&egrave;me graphe le traffic qui n'est pas du routage. Si l'on est en <code>server-only</code>, un seul graphe est affich&eacute;.
+</ul>
+<br /><li />Page de graphes sur l'utilisation du syst&egrave;me :
+<ul>
+<li />Un premier graphe sur la proportion de processus syst&eacute;mes, utilisateurs et nic&eacute;s dans le % d'utilisation du cpu.
+<li />Un deuxi&egrave;me sur le load du syst&egrave;me par rapport au % total d'utilisation du cpu.
+<li />Un troisi&egrave;me sur le nombre de processus tournant sur le serveur, ainsi que la taille de la file d'attente des process.
+<li />Enfin, un quatri&egrave;me sur l'uptime du cpu.
+<li />Ensuite, un graphe sur l'occupation de la m&eacute;moire vive du serveur.
+<li />Et un graphe sur la taille et l'occupation de la m&eacute;moire virtuelle ou swap.
+<li />Puis un graphe sur le volume brut de donn&eacute;es &eacute;rites/lues sur le disque dur du serveur.
+<li />Enfin, un graphe sur l'occupation disque de composantes importantes de SME: les r&eacute;pertoires <code>/var/log</code> (les fichiers journaux), <code>/home/e-smith/files</code> (les fichiers des utilisateurs et les ibays), <code>/var/spool/squid</code> (la taille du cache du proxy Squid), <code>/var/lib/mysql</code> (la taille des bases de donn&eacute;es MySQL) ainsi que l'espace restant encore disponible sur le disque dur. On peut d&eacute;sactiver le calcul de l'occupation disque sur ces r&eacute;pertoires, car sur certaines configurations, cela peut prendre beaucoup de temps et ralentir le fonctionnement g&eacute;n&eacute;ral du serveur. On n'aura alors sur le graphe que l'espace disponible par rapport &agrave; l'espace total.
+</ul>
+<br /><li />Page de tests avanc&eacute;s :
+<br />Cette page va servir &agrave; v&eacute;rifier qu'un service r&eacute;pond vraiment lorsque on lui envoie un requ&ecirc;te.
+<br />En cliquant sur les diff&egrave;rents liens, on peut tester les services httpd, smbd, nmbd, popd, sshd, ftpd, smtpfont-qmail ainsi que le temps de r&eacute;ponse du serveur &agrave; un ping.
+
+<br /><br /><li />Page de configuration de Sme8admin :
+<br />Cette page permet de configurer le d&eacute;mon <code>sme8admind</code> ainsi que certains param&egrave;tres de l'interface web. La configuration est stock&eacute;e dans un fichier texte. Les options sont les suivantes :
+<ul>
+<li /> Destinataire des messages de status, ainsi que leur fr&eacute;quence. Si on met 0, ils sont d&eacute;sactiv&eacute;s.
+<br /><li /> Param&egrave;tres de connexion &agrave; MySQL. On ne doit modifier ces valeurs que si on a modifi&eacute; les valeurs correspondantes dans MySQL.
+<br /><li /> Noms des interfaces r&eacute;seaux. Logiquement, ces valeurs sont auto-d&eacute;tect&eacute;es, mais on peut avoir besoin de les changer (p.ex 3&egrave;me interface r&eacute;seau en Wi-Fi &agrave; surveiller..). On peut ajouter des domaines de courrier externes, mais il ne seront pris en compte que si les messages transitent par le serveur de messagerie de SME.
+<br /><li /> Diverses options pour l'interface web.
+<br /><li /> Options pour les senseurs. Bien v&eacute;rifier que son mat&eacute;riel est support&eacute; ou pas par lm_sensors et hddtemp, et que ces options sont correctement renseign&eacute;es avant de dire "mon graphe de temp&eacute;rature ne se remplit pas". 
+<br /><li /> Destinataire des messages d'alertes, et limites pour le d&eacute;clenchement des alertes. Les limites possibles sont : la temp&eacute;rature du mat&eacute;riel, le nombre de connexions ssh/ftp/vpn/netbios, l'utilisation du disque dur, du processeur, de la m&eacute;moire et le nombre d'email sortant/rentrant. Si l'on met 0 pour une alerte, elle est d&eacute;sactiv&eacute;e.
+</ul>
+
+<br /><li />Page de d&eacute;tail du service httpd / httpd-admin :
+<br />On dispose d'un graphe d&eacute;taillant le % cpu, la taille de la m&eacute;moire vive allou&eacute;s &agrave; des processus httpd, ainsi que leur nombre.
+
+<br /><br /><li />Page de d&eacute;tail du service sshd :
+<br />On donne la liste des derni&egrave;s connexions administratives. On met en &eacute;vidence les connexions root r&eacute;ssies, ainsi que toutes les tentatives de connexions infructueuses.
+
+<br /><br /><li />Page de d&eacute;tail du service squid :
+<br />On &agrave; un graphe d&eacute;taillant le % cpu, la taille de la m&eacute;moire vive allou&eacute;s &agrave; des processus squid correspondant au proxy transparent, ainsi que leur nombre.
+
+<br /><br /><li />Page de d&eacute;tail du service pppoe :
+<br />Elle pr&eacute;sente l'historique des derni&egrave;res connexions ADSL par pppoe, avec le d&eacute;but, l'ip attribu&eacute;e, ainsi que la date de fin, la dur&eacute;e et le volume transf&eacute;r&eacute; durant la connexion. On met en &eacute;vidence les connexions de moins de 4 heures, et les d&eacute;connexions de plus d'une minute. Ces deux param&egrave;tres peuvent &ecirc;tre chang&eacute;s dans la page de configuration de Sme8admin. Ainsi, on peut observer la fiabilit&eacute;/stabilit&eacute; de la connexion &agrave; Internet.
+
+<br /><br /><li />Page de d&eacute;tail du service dhcpd :
+<br />On dispose ici de la date des derniers renouvellements de baux par les postes du r&eacute;seau local, ainsi que de leurs adresses MAC, leurs IPs, et leurs nom DNS attribu&eacute; par le serveur. On peut ainsi voir quelle stations ont &eacute;t&eacute; allum&eacute;es r&eacute;cemment.
+
+<br /><br /><li />Page de d&eacute;tail du service pptpd :
+<br />On a la liste des connexions vpn effectu&eacute;es sur le serveur, avec les dates de d&eacute;but et de fin, la dur&eacute;e, l'IP du client vpn, son login et le volume transf&eacute;r&eacute;. On met en &eacute;vidence les connexions de plus de 2 heures, ce param&egrave;tre peut &ecirc;tre chang&eacute; dans la page de configuration de Sme8admin.
+
+<br /><br /><li />Page de d&eacute;tail du service smb/nmb :
+<br />Cette page propose tout d'abord l'historique des derni&egrave;res connexions d'un triplet (machine/ip/personne) &agrave; un des partages r&eacute;seau samba du serveur, ainsi que la dur&eacute;e approximative &agrave; cinq minutes.
+<br />Ensuite elle propose le graphe d&eacute;taillant le % cpu, la taille de la m&eacute;moire vive allou&eacute;s aux processus g&egrave;rant samba, ainsi que leur nombre.
+<br />On peut ainsi observer quels sont les postes qui utilisent fr&eacute;quemment le service samba du serveur.
+
+<br /><br /><li />Page de d&eacute;tail du service atalk :
+<br />De la m&ecirc;me mani&egrave;re cette page propose tout d'abord l'historique des derni&egrave;res connexions d'une machine au service de partage de fichier avec les Macintosh du serveur avec le d&eacute;tail des volumes de transferts de fichiers.
+<br />Ensuite elle propose le graphe d&eacute;taillant le % cpu, la taille de la m&eacute;moire vive allou&eacute;s aux processus g&egrave;rant ce service (papd, afpd, netatalk), ainsi que leur nombre.
+<br />On peut ainsi observer quels sont les postes qui utilisent fr&eacute;quemment le service atalk du serveur.
+
+<br /><br /><li />Page de d&eacute;tail du service proftpd :
+<br />Cette page montre la liste de connexions au service ftp du serveur, r&eacute;ussies ou non. Elle d&eacute;taille l'adresse IP du client, son login et le volume transf&eacute;r&eacute;.
+
+</ul>
+</p>
+
+<p><i> Liste des fichiers install&eacute;s/cr&eacute;es par le RPM </i>:
+
+<code>
+<br />/etc/e-smith/events/actions/sme8admin-parselog
+<br />/etc/e-smith/events/logrotate/S15sme8admin-parselog
+<br />/etc/e-smith/web/functions/sme8admin
+<br />/etc/e-smith/web/panels/manager/cgi-bin/sme8admin
+<br />/etc/e-smith/web/panels/manager/html/sme8admin/sme8admin.conf
+<br />/etc/rc.d/init.d/sme8admind
+<br />/etc/rc.d/rc0.d/K03sme8admind
+<br />/etc/rc.d/rc1.d/K03sme8admind
+<br />/etc/rc.d/rc2.d/K03sme8admind
+<br />/etc/rc.d/rc3.d/S97sme8admind
+<br />/etc/rc.d/rc4.d/S97sme8admind
+<br />/etc/rc.d/rc5.d/S97sme8admind
+<br />/etc/rc.d/rc6.d/K03sme8admind
+<br />/etc/rc.d/rc7.d/S97sme8admind
+<br />/usr/bin/sme8admind
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/create_mysql.sh
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/create_rrd.sh
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/create_smedb.sh
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/sme8admin-doc-fr.html
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/sme8admin-doc-en.html
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/sme8admin-fr.po
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/sme8admin-en.po
+<br />/usr/share/doc/smeserver-sme8admin-1.1.0/tables.sql
+<br />/usr/share/locale/en/LC_MESSAGES/sme8admin.mo
+<br />/usr/share/locale/fr/LC_MESSAGES/sme8admin.mo
+</code>
+<br /><br /><i>Liste des r&eacute;pertoires utilis&eacute;s </i>:
+<table border=1>
+<tr><th>Fichier/r&eacute;pertoire</th><th>Contient</th></tr>
+<tr><td><code>/var/log/sme8admin.log</code></td><td>la trace du d&eacute;mon.</td></tr>
+<tr><td><code>/var/tmp/</code></td><td>stockage temporaire des logs.</td></tr>
+<tr><td><code>/var/lib/sme8admin/</code></td><td>les fichiers RRDs stockant les donn&eacute;es pour les graphes.</td></tr>
+<tr><td><code>/etc/e-smith/web/panels/manager/html/sme8admin/</code></td><td>les graphes g&eacute;n&eacute;r&eacute;s et de la configuration.</td></tr>
+</table>
+<br />(Le programme stocke tous les graphes dans un sous-r&eacute;pertoire du <code>server-manager</code> ainsi l'interface est accessible via un tunnel SSH.)
+</p>
+<p><i> Un petit peu plus de d&eacute;tails </i>:
+<ul>
+<li />les e-mails d'alertes et de status sont envoy&eacute;s avec le nom <b>sme8admin-daemon@mondomaine</b> en exp&eacute;diteur, pour &ecirc;tre bien vus dans le lecteur de mail.
+<li />Un e-mail d'alerte rappelle la limite qui avait &eacute;t&eacute; fix&eacute;e, la valeur courante, ainsi qu'une explication possible de la cause de l'alerte. De plus, on a un lien vers l'interface web pour configurer directement la limite.
+<li />Un e-mail de status envoie les 10 derni&egrave;res lignes de <code>/var/log/messages</code>, le nombre de connexions ouvertes sur les services critiques, la sortie de <code>netstat --numeric-hosts -tpu</code> (la liste d&eacute;taill&eacute;e de toutes les connexions r&eacute;seau actives) ainsi que le status des services samba, http et ssh. Si on ne le re&ccedil;oit pas, c'est un bon indice d'un fonctionnement anormal. (Serveur &eacute;teint, qmail arret&eacute;, pas de connexion ADSL ...)
+</ul>
+
+Le programme est un d&eacute;mon, pour savoir s'il fonctionne faire :
+<br /><code>service sme8admind status</code>
+<br />S'il est arret&eacute;, un d&eacute;but d'explication peut &ecirc;tre trouv&eacute; dans son fichier journal <code>/var/log/sme8admin.log</code>. Si vous avez des probl&egrave;mes pour le red&eacute;marrer, faites <code>rm -f /var/run/sme8admin.pid</code> avant de r&eacute;essayer.
+<br />Il se lance automatiquement au d&eacute;marrage du serveur. Lors d'un &eacute;venement <code>logrotate</code>, le syst&egrave;me lui envoie un signal unix SIGUSR1 pour le forcer &agrave; lire les journaux qui vont &ecirc;tre archiv&eacute;s.
+</p>
+
+<p><i> Changelog </i>:
+<br /><br />* Web Feb 01 2006 : v1.1.0 - un an pile après la derniere version majeure.
+<br />- Renommage en smeserver-sme8admin.
+<br />- Uniquement compatible avec SME 7 &agrave; partir de maintenant. (Sauf si BEAUCOUP de demandes => extension de compatibilit&eacute;.)
+<br />- R&eacute;&eacute;criture majeure, GROS nettoyage du code.
+<br />- Passage des options dans un fichier de configuration.
+<br />- BEAUCOUP plus de choses configurables. G&egrave;re plus de configurations correctement.
+<br />- Ajout de services sp&eacute;cifiques SME7.
+<br />- Ajout d'un lien pour configurer la limite dans les mails d'alerte.
+<br />- Ajout du 'netstat -tlp' et du 'w' dans la page d'accueil.
+
+<br /><br />* Mon Oct 03 2005 : v1.0.5 by Cyril
+<br />- Correction de certains bugs pour pouvoir le lancer sur sme7.
+<br />- Beaucoup de choses fonctionnent anormalement (&eacute;v&eacute;nements non d&eacute;tect&eacute;s) sur sme7.
+
+<br /><br />* Tue Feb 01 2005 : v1.0.4
+<br />- Passage &agrave; gettext pour toutes les sorties texte.
+<br />- Traduction anglaise pour le panel et le texte des e-mails.
+<br />- Fichier .po inclus pour les langue fran&ccedil;aise et anglaise.
+
+<br /><br />* Tue Sep 14 2004 : v1.0.3
+<br />- Ajout de afp sur le graphe des sessions.
+<br />- Modification des graphes de traffic r&eacute;seau.
+<br />- Modification du graphe ecriture/lecture disque.
+<br />- Ajout graphe trafic serveur hors routage.
+<br />- Amélioration UI et short_status (easter-egg ;)).
+<br />- Correction bug client ftp anonymous.
+<br />- Possibilit&eacute; de d&eacute;sactiver les alertes.
+<br />- Nettoyage /var/tmp au logrotate.
+
+<br /><br />* Thu Aug 26 2004 : v1.0.2
+<br />- Compatibilit&eacute; avec la 5.6 Ok.
+<br />- Prise en compte de la locale US (0.0 => 0,0).
+<br />- Ajout temp&eacute;rature hd2.
+<br />- Correction bugs.
+<br />- Am&eacute;lioration des scripts postinstall et preuninstall pour rendre possible l'upgrade.
+
+<br /><br />* Mon Aug 9 2004 : v1.0.1
+<br />- Ajout de la configuration du temps entre 2 mails de status.
+<br />- Am&eacute;lioration de la compatibilit&eacute; avec SME 5.6.
+ 
+<br /><br />* Fri Aug 6 2004 : v1.0.0
+</p>
+
+<p>
+Toutes les requ&ecirc;tes, questions et rapports d'erreurs sont bienvenus, et peuvent &ecirc;tre envoy&eacute;es &agrave; <code> landry at firewall - services point com</code>.
+</body>
+</html>

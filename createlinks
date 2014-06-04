@@ -1,0 +1,17 @@
+#! /usr/bin/perl -w
+
+use esmith::Build::CreateLinks qw(:all);
+
+# Start and stop links
+service_link_enhanced("sme9admind", "S99", "7");
+service_link_enhanced("sme9admind", "K97", "6");
+service_link_enhanced("sme9admind", "K20", "0");
+service_link_enhanced("sme9admind", "K20", "1");
+
+# Links for the panel
+panel_link("sme9admin", "manager");
+#system("mkdir -p root/etc/e-smith/web/panels/manager/html/sme8admin");
+safe_symlink("/etc/e-smith/web/panels/manager/html/sme9admin", "root/etc/e-smith/web/panels/user/html/sme9admin");
+
+# Logrotate
+event_link("sme9admin-parselog","logrotate","15");
