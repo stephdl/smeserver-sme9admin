@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="us" xml:lang="us">
+
+<head>
+<link rel="stylesheet" type="text/css" href="/server-common/css/sme_core.css" />
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+
+<title> Documentation sme9admin </title>
+</head>
+<body>
+
+<h3> Documentation sme9admin </h3>
+<p>
+<b> Author :</b> Landry Breuil <br />
+<b> Creation date of this doc :</b> 30/01/2006 <br />
+<b> Corresponding version of sme9admin :</b> 1.1.0-1 <br />
+<b> Sme6admin was tested with SME :</b> 7b5, 7pre1<br />
+
+<p><i> Why this contrib ? </i>:
+<br />The aim is to see globally what happens on the server, without using the administrative ssh shell. The homepage of the contrib is in the SME server-manager, in the tab <code>sme9admin</code>. This contrib is an evolution of sme6admin for SME7, and has been mostly rewritten.
+</p>
+<p><i> Description of the different pages </i>:
+<ul>
+   <li />List of the informations provided by the main page of the contrib :
+   <ul>
+      <li />Some links to the pages containings the graphs (see below), and a link to the configuration page of sme9admin.
+      <li />The result of the command <code>netstat</code> which permits to see the opened tcp connexions on the server. The outgoing/incoming connexions are highlighted. 
+      <li />The result of the command <code>w</code> which permits to see the list of the users connected to a shell on the server, from where, since when, and what was their last command.
+      <li />The status of the main services running on the server, with the associated number of unix processes. The right button allows to stop/start a service. (it corresponds to the command <code> service xxx stop/start </code>)
+      <br /> Some of the services' name are links to pages containing more details on the chosen service.
+      <li />The result of the command <code>netstat --listen -tp</code> showing the list of processes listening on a socket. 
+      <li />The date of the last antivirus database update, and the number of viruses/signatures known by ClamAV.
+   </ul>
+
+   <br />
+   <li />Graph page on the harware state contains :
+   <ul>
+      <li />A graph with the temperatures of the cpu and motherboard, detected by lm_sensors, and those of the hard disks, detected by hddtemp.
+      <li />A graph with the cpu fan speed.
+      <br />(You must notice that these values depends entirely of the support of your hardware by lm_sensors and hddtemp. You have to CONFIGURE correctly sme9admin first if you want the graphs to fill.)
+      <br />You can have these graphs on various durations, following the links on top of the page.
+   </ul>
+
+   <br />
+   <li />Graph page on the network use contains :
+   <ul>
+      <li />A graph on the opened network sessions. It monitors the ftp, ssh, netbios, afp and vpn connexions. Theses curves corresponds to the number of opened tcp connexions on the ports 21,22,139,548 and 1723.
+      <li />A graph with the number of dhcp leases renewal and samba connexions. It permits to view the local network activity. The samba connexions differs from the netbios connexions here because a client host can be connected simultaneously to many samba shares, this makes only one netbios connexion and many samba "connexions".
+      <li />A graph with the amount of incoming/outgoing e-mails on the server (the values are stacked). By default, it only counts the e-mails accounts of the server's main domain, the virtual domains, and the e-mails fetched by fetchmail on local mailboxes. You can add domains and e-mail adresses by configuring sme9admin, but only the mails passing through SME's e-mail server will be counted. There is also the number of rejected spam by Spamassassin and the number of viruses filtered by ClamAV.
+      <li />A graph showing the ping latency with the default gateway to internet. The ping target is configurable, as it may be useful if you are not directly on the web (ie. in <code>server-only</code> mode) to test the latency on an external host. If the ping is greater than 200ms, the value is bounded to have a readable graph. (If you had a 4s ping latency, you would have had a peak on the graph and nothing around.)
+      <li />Two graphs with the amount of raw network flow on the server. Frequently, the amount of data incoming on the external network interface corresponds to the outgoing data on the internal network interface, it is flow relayed by the server to the local network. On the third graph you can see the amount of data which is not a relayed flow. If the server is in <code>server-only</code> mode, only one graph is displayed, as you have only one NIC.
+   </ul>
+   <br />
+   <li />Graph page on the system use contains :
+   <ul>
+      <li />A graph on the % cpu use, with the ratio between system, user and niced processes.
+      <li />A graph on the system load, in comparison to the total % cpu use.
+      <li />A graph on the number of processes running on the server, with the size of the run queue.
+      <li />A graph with the server uptime.
+      <li />A graph on the server RAM use.
+      <li />A graph on the server swap use.
+      <li />A graph with the amount of raw data written/read on the hard disk.
+      <li />A graph on the disk space use, detailed with the size of special directories of SME Server : <code>/var/log</code> (log files), <code>/home/e-smith/files</code> (user files and ibays), <code>/var/spool/squid</code> (Squid cache), <code>/var/lib/mysql</code> (MySQL databases), and finally the available free space on the hard disk. You can desactivate the computing of directories'size, because on large hard disks, it may take a LOT of time. If so, you would have only available disk space displayed on the graph.
+   </ul>
+
+   <br />
+   <li />Advanced tests page :
+   <br />This page is used when you want to check if a service responds really when you send a request.
+   <br />If you click on the links, you can check the httpd, smbd, nmbd, popd, sshd, ftpd, smtpfront-qmail services, and the ping to the outside (google.fr here).
+
+   <br />
+   <br />
+   <li />Configuration page of sme9admin :
+   <br />This last page permits to configure the <code>sme9admind</code> daemon, and to set some web interface settings. The configuration is saved in a plain-text file. The settings are :
+   <ul>
+   <li /> Recipient and frequency of status e-mails. If you put 0 for the frequency, status e-mails are disabled.
+   <br /><li /> MySQL connection settings. You may change these values only if you have modified corresponding MySQL settings first.
+   <br /><li /> Network interface names. Normally, these settings are autodetected, though you may have to change them. (You may have a third wireless NIC, and you want to monitor it in place of another NIC...). You can add external mail domains to count, but they will be matched only if the mails pass through SME's internal mail system. 
+   <br /><li /> Miscellaneous web interface settings. (graphs size &amp; format,...)   
+   <br /><li /> Hardware sensors settings. Remember first to check if your hardware is supported by lm_sensors and hddtemp, and then check if these settings are correct before bugging me with "My temp graphs are empty ? WTF ? Your program sucks !"
+   <br /><li /> Recipient of alert e-mails. and bounds for the alerts. If you put 0, the alert is disabled. The possible bounds are : the hardware temperatures, the number of ssh/ftp/vpn/netbios connexions, the disk space, cpu and memory use, and the number of incoming/outgoing e-mails.
+   </ul>
+
+   <br />
+   <li />Details page on httpd / httpd-admin service :
+   <br />It is a graph with the number, % cpu use, and size of memory allocated for the httpd processes.
+
+   <br />
+   <br />
+   <li />Details page on sshd service :
+   <br />You have the list of the last administrative connexions. Successful root connexions are highlighted, and all failed connexions attempts are shown.
+
+   <br />
+   <br />
+   <li />Details page on squid service :
+   <br />It is a graph with the number, % cpu use, and size of memory allocated for the squid processes.
+
+   <br />
+   <br />
+   <li />Details page on pppoe service :
+   <br />It shows the history of the ADSL connexions, with the start, end, duration, ip assigned and amount of data transferred. Connexions which lasted less than 4 hours, and disconnexions that lasted more than one minute are highlighted. These two parameters can be changed in the configuration page of sme9admin. Thus, you can see the reliability/stability of the internet link.
+
+   <br />
+   <br />
+   <li />Details page on dhcpd service :
+   <br />You have the date of the lasts dhcp leases renewal by local network hosts, theirs MAC/IP address, and theirs hostname (assigned by the server). Thus you can see which workstation was recently powered on, and since when a workstation has not been seen on the local network.
+
+   <br />
+   <br />
+   <li />Details page on pptpd service :
+   <br />It presents the list of the vpn connexions on the server, with the start, end, duration, client IP/login, and amount of data transferred. Connexions which lasted more than 2 hours are highlighted.This parameter can be changed in the configuration page of sme9admin.
+
+   <br />
+   <br />
+   <li />Details page on smb/nmb service :
+   <br />First, you have the history of the last connexions from a triplet (host/ip/user) to a samba share on the server, and the approximative duration (to 5 minutes).
+   <br />Then there is the graph showing the number, % cpu use and size of memory allocated to the samba processes.
+   <br />Thus you can analyse which hosts use frequently the samba service.
+
+   <br />
+   <br />
+   <li />Details page on atalk service :
+   <br />In the same way, this page shows first the history of the last connexions to the Apple file share system on the system, with the amount of data transferred.
+   <br />Then it shows the graph with the number, % cpu use and size of memory allocated to the afp system processes (papd, afpd, netatalk).
+   <br />Thus you can view which hosts use the atalk share system.
+
+   <br />
+   <br />
+   <li />Details page on proftpd service :
+   <br />This page shows the list of the connexions to the ftp service, successful or not. You have the IP of the client, its login and the amount of data transferred.
+
+</ul>
+</p>
+
+<p><i> List of files installed/created by the RPM </i>:
+
+<code>
+<br />/etc/e-smith/events/actions/sme9admin-parselog
+<br />/etc/e-smith/events/logrotate/S15sme9admin-parselog
+<br />/etc/e-smith/web/functions/sme9admin
+<br />/etc/e-smith/web/panels/manager/cgi-bin/sme9admin
+<br />/etc/e-smith/web/panels/manager/html/sme9admin/sme9admin.conf
+<br />/etc/rc.d/init.d/sme9admind
+<br />/etc/rc.d/rc0.d/K03sme9admind
+<br />/etc/rc.d/rc1.d/K03sme9admind
+<br />/etc/rc.d/rc2.d/K03sme9admind
+<br />/etc/rc.d/rc3.d/S97sme9admind
+<br />/etc/rc.d/rc4.d/S97sme9admind
+<br />/etc/rc.d/rc5.d/S97sme9admind
+<br />/etc/rc.d/rc6.d/K03sme9admind
+<br />/etc/rc.d/rc7.d/S97sme9admind
+<br />/usr/bin/sme9admind
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/create_mysql.sh
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/create_rrd.sh
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/create_smedb.sh
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/sme9admin-doc-fr.html
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/sme9admin-doc-en.html
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/sme9admin-fr.po
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/sme9admin-en.po
+<br />/usr/share/doc/smeserver-sme9admin-1.1.0/tables.sql
+<br />/usr/share/locale/en/LC_MESSAGES/sme9admin.mo
+<br />/usr/share/locale/fr/LC_MESSAGES/sme9admin.mo
+</code>
+
+<br />List of the directories used :
+<table border=1>
+<tr><th>File/directory</th><th>Contains</th></tr>
+<tr><td><code>/var/log/sme9admin.log</code></td><td>daemon's trace and errors</td></tr>
+<tr><td><code>/var/tmp/</code></td><td>temporary logs'place.</td></tr>
+<tr><td><code>/var/lib/sme9admin/</code></td><td>RRDs files handling datas for the graphs.</td></tr>
+<tr><td><code>/etc/e-smith/web/panels/manager/html/sme9admin/</code></td><td>generated graphs and configuration file.</td></tr>
+</table>
+<br />(The daemons puts all the graphs in a subdirectory of the <code>server-manager</code>, thus the panel is attainable through a SSH tunnel.)
+</p>
+
+<p><i> A little more details </i>:
+<ul>
+   <li />The status and alert e-mails are sent with <b>sme9admin-daemon@mydomain</b> as sender, you can use it as a filter in your mail-reader.
+   <li />An alert e-mail reminds the fixed bound, the current value, and a short explanation for the alert. You have a direct link to the bound configuration webpage.
+   <li />A status e-mail sends the number of opened connexions to the services, the 10 last lines of <code>/var/log/messages</code>, the output of <code>netstat --numeric-hosts -tup</code> (detailed list of all opened and active network connections), and the status of samba, httpd and sshd services. If you don't receive it, there is probably a problem on the server (Server off, qmail stopped, pppoe down,...)
+</ul>
+
+The program runs as a daemon, to know if it runs :
+<br /><code>service sme9admind status</code>
+<br />If it is off, you can have a idea of its problem in the log file <code>/var/log/sme9admin.log</code>. If you encounter problems restarting it, execute <code>rm -f /var/run/sme9admin.pid</code> before retrying.
+<br />It is run at the boot of the server. On the <code>logrotate</code> event, the system sends a SIGUSR1 unix signal to force the daemon to parse the logs which will be archived.
+</p>
+
+<p><i> Changelog </i>:
+<br /><br />* Web Feb 01 2006 : v1.1.0 - one year after last major release.
+<br />- Renamed to smeserver-sme9admin.
+<br />- Only compatible with SME 7 from now. (Only if a get a LOT of requests, i'll port the new functions to sme6admin.)
+<br />- Major global rewrite, a LOT of code cleaning.
+<br />- The settings are now in a configuration file.
+<br />- A LOT of things are now configurable (more setups are supported).
+<br />- Added SME7-specific services.
+<br />- Added a link to configure the bound in an alert e-mail.
+<br />- Added the output of 'netstat -tlp' and 'w' to the main page.
+
+<br /><br />* Mon Oct 03 2005 : v1.0.5 by Cyril
+<br />- Correction of some bugs to run the daemon on sme7.
+<br />- A lot of things are buggy(events not correctly detected) on sme7.
+
+<br /><br />* Tue Feb 01 2005 : v1.0.4
+<br />- Change to gettext for all the text outputs.
+<br />- English translation for the panel and the text of e-mails.
+<br />- File .po included for french and english language.
+
+<br /><br />* Tue Sep 14 2004 : v1.0.3
+<br />- Added afp on the session graph.
+<br />- Modified the network traffic graphs.
+<br />- Modified the raw data write/read graph.
+<br />- Added network traffic (all but relayed) graph.
+<br />- Improvement of UI and short_status (easter-egg ;)).
+<br />- Corrected ftp anonymous client bug.
+<br />- Possibility to disable alerts.
+<br />- Clean /var/tmp on logrotate.
+
+<br /><br />* Thu Aug 26 2004 : v1.0.2
+<br />- Compatibility with 5.6 Ok.
+<br />- Take care of US locale (0.0 => 0,0).
+<br />- Added temperature for second hard disk.
+<br />- Corrected bugs.
+<br />- Improvement of the postinstall and preuninstall scripts to enable rpm upgrade.
+
+<br /><br />* Mon Aug 9 2004 : v1.0.1
+<br />- Added the configuration of delay between 2 status e-mails.
+<br />- Improvement of the compatibility with SME 5.6.
+ 
+<br /><br />* Fri Aug 6 2004 : v1.0.0
+</p>
+
+<p>
+All complaint, bug reports, requests, remarks, thanks are welcome at <code>landry at firewall - services dot com</code>, especially if the english translation of the doc/UI/howto is BAD. I NEED a feedback from the users to improve sme9admin. A big thanks goes to rv, who supported me during the creation of sme9admin, and Shad Lords for his sysmon, i've used some of his ideas.
+
+</body>
+</html>

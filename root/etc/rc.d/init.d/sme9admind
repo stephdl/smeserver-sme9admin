@@ -1,0 +1,59 @@
+#!/bin/sh
+# Sme9admin - script shell pour l'arret/demarrage du service
+# Copyright (C) 2006
+# This file is distributed under the GPL license.
+# Landry Breuil <landry@firewall-services.com>, 2006.
+
+# description: service de surveillance du systeme
+# chkconfig: 345 97 03
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+  start)
+	echo -n "Starting sme9admin daemon: "
+	# Not shutdown correctly ?
+	if [ -f /var/run/sme9admin.pid ]; then
+		kill `cat /var/run/sme9admin.pid` >/dev/null 2>&1
+		rm -f /var/run/sme9admin.pid  >/dev/null 2>&1
+		rm -f /var/lock/subsys/sme9admin && rm -f /var/lock/sme9admin
+	fi
+	daemon /usr/bin/sme9admind
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/sme9admin
+	;;
+  stop)
+	echo -n "Stopping sme9admin daemon: "
+	killproc sme9admind
+	RETVAL=$?
+	rm -f /var/lock/subsys/sme9admin && rm -f /var/lock/sme9admin
+        echo
+	;;
+  status)
+	status sme9admind
+	RETVAL=$?
+	;;
+  restart)
+	$0 stop
+	$0 start
+	RETVAL=$?
+	;;
+  reload)
+	echo -n "Sme9admin configuration reloaded: "
+    # A VOIR !!
+	kill -1 `cat /var/run/sme9admin.pid`
+    RETVAl=$?
+	echo
+   ;;
+  *)
+	echo "Usage: $0 {start|stop|status|restart|reload}"
+	exit 1
+esac
+
+exit $RETVAL
+

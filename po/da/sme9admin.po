@@ -1,0 +1,1107 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: da\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:111
+msgid "Graphs on one hour, average on 5mn."
+msgstr "Grafer på en time, gennemsnit på 5 min."
+
+#: root/etc/e-smith/web/functions/sme9admin:112
+msgid "Graphs on six hours, average on 5mn."
+msgstr "Grafer på seks timer, gennemsnit på 5 min."
+
+#: root/etc/e-smith/web/functions/sme9admin:113
+msgid "Graphs on one day, average on 5mn."
+msgstr "Grafer på en dag, gennemsnit på 5 min."
+
+#: root/etc/e-smith/web/functions/sme9admin:114
+msgid "Graphs on three days, average on 30mn."
+msgstr "Grafer på tre dage, gennemsnit på 30 min."
+
+#: root/etc/e-smith/web/functions/sme9admin:115
+msgid "Graphs on one week, average on 30mn."
+msgstr "Grafer på en uge, gennemsnit på 30 min."
+
+#: root/etc/e-smith/web/functions/sme9admin:116
+msgid "Graphs on one month, average on 2h"
+msgstr "Grafer på en måned, gennemsnit på 2 timer"
+
+#: root/etc/e-smith/web/functions/sme9admin:117
+msgid "Graphs on six months, average on 1d."
+msgstr "Grafer på seks måneder, gennemsnit på 1 dag."
+
+#: root/etc/e-smith/web/functions/sme9admin:118
+msgid "Graphs on one year, average on 1d"
+msgstr "Grafer på et år, gennemsnit på 1 dag"
+
+#: root/etc/e-smith/web/functions/sme9admin:122
+msgid "Maximum number of incoming e-mails "
+msgstr "Maksimum på antal indkomne e-mails "
+
+#: root/etc/e-smith/web/functions/sme9admin:123
+msgid "Maximum number of outgoing e-mails "
+msgstr "Maksimum på antal udgående e-mails "
+
+#: root/etc/e-smith/web/functions/sme9admin:124
+msgid "Maximum % of hard disk usage "
+msgstr "Maksimum % af hardisk anvendelse "
+
+#: root/etc/e-smith/web/functions/sme9admin:125
+msgid "Maximum % of cpu usage "
+msgstr "Maksimum % af cpu anvendelse "
+
+#: root/etc/e-smith/web/functions/sme9admin:126
+msgid "Maximum temperature for cpu and motherboard "
+msgstr "Maksimum temperatur for cpu og bundkort "
+
+#: root/etc/e-smith/web/functions/sme9admin:127
+msgid "Maximum hard disk temperature "
+msgstr "Maksimal hardisk temperatur "
+
+#: root/etc/e-smith/web/functions/sme9admin:128
+msgid "Maximum number of samba sessions "
+msgstr "Maksimum antal samba sessioner "
+
+#: root/etc/e-smith/web/functions/sme9admin:129
+msgid "Maximum number of ssh sessions "
+msgstr "Maksimum antal ssh sessioner "
+
+#: root/etc/e-smith/web/functions/sme9admin:130
+msgid "Maximum number of ftp sessions "
+msgstr "Maksimum antal ftp sessioner "
+
+#: root/etc/e-smith/web/functions/sme9admin:131
+msgid "Maximum number of vpn sessions "
+msgstr "Maksimum antal vpn sessioner "
+
+#: root/etc/e-smith/web/functions/sme9admin:226
+msgid "View graphs on :"
+msgstr "Vis graf for:"
+
+#: root/etc/e-smith/web/functions/sme9admin:227
+msgid "server's hardware (sensors)\n"
+msgstr "Serverens hardware (sensorer)\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:228
+msgid "network use (connections,sessions,load)\n"
+msgstr "netværksdata (forbindelser, sessioner, belastning)\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:229
+msgid "system performance (cpu, memory, hard disk)\n"
+msgstr "Systemydelse (cpu, hukommelse, harddisk)\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:230
+msgid "Advanced connection tests on services\n"
+msgstr "Udvidet forbindelsestest til services\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:231
+msgid "Configuration of sme9admin\n"
+msgstr "Konfiguration af sme9admin\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:238
+msgid "Active tcp connections tcp with external(blue)/local(green) connections highlighted :\n"
+msgstr "Aktive tcp forbindelser. Tcp med eksterne(blå) og lokale(grønne) forbindelser er fremhævet:\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:240
+#: root/etc/e-smith/web/functions/sme9admin:371
+msgid "Local IP:port"
+msgstr "Lokal IP:port"
+
+#: root/etc/e-smith/web/functions/sme9admin:240
+#: root/etc/e-smith/web/functions/sme9admin:371
+msgid "PID/Process"
+msgstr "PID/Proces"
+
+#: root/etc/e-smith/web/functions/sme9admin:240
+msgid "Remote IP:port"
+msgstr "Fjern IP:port"
+
+#: root/etc/e-smith/web/functions/sme9admin:240
+#: root/etc/e-smith/web/functions/sme9admin:297
+#: root/etc/e-smith/web/functions/sme9admin:311
+msgid "State"
+msgstr "Status"
+
+#: root/etc/e-smith/web/functions/sme9admin:257
+msgid "Stats :\n"
+msgstr "Statistik:\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:262
+msgid "Connected users :"
+msgstr "Tilsluttede brugere:"
+
+#: root/etc/e-smith/web/functions/sme9admin:263
+msgid "Command"
+msgstr "Kommando"
+
+#: root/etc/e-smith/web/functions/sme9admin:263
+msgid "From"
+msgstr "Fra"
+
+#: root/etc/e-smith/web/functions/sme9admin:263
+msgid "Idle"
+msgstr "Inaktiv"
+
+#: root/etc/e-smith/web/functions/sme9admin:263
+#: root/etc/e-smith/web/functions/sme9admin:924
+#: root/etc/e-smith/web/functions/sme9admin:945
+#: root/etc/e-smith/web/functions/sme9admin:967
+#: root/etc/e-smith/web/functions/sme9admin:1008
+#: root/etc/e-smith/web/functions/sme9admin:1029
+msgid "Login"
+msgstr "Login"
+
+#: root/etc/e-smith/web/functions/sme9admin:263
+msgid "Since"
+msgstr "Siden"
+
+#: root/etc/e-smith/web/functions/sme9admin:263
+msgid "TTY"
+msgstr "TTY"
+
+#: root/etc/e-smith/web/functions/sme9admin:281
+msgid "Web services"
+msgstr "Web tjenester"
+
+#: root/etc/e-smith/web/functions/sme9admin:282
+msgid "Administrative services"
+msgstr "Administrative tjenester"
+
+#: root/etc/e-smith/web/functions/sme9admin:283
+msgid "Network services"
+msgstr "Netværkstjenester"
+
+#: root/etc/e-smith/web/functions/sme9admin:284
+msgid "File-sharing services"
+msgstr "Fildelingstjenester"
+
+#: root/etc/e-smith/web/functions/sme9admin:285
+msgid "E-mail services"
+msgstr "E-mail tjenster"
+
+#: root/etc/e-smith/web/functions/sme9admin:286
+msgid "DNS services"
+msgstr "DNS tjenester"
+
+#: root/etc/e-smith/web/functions/sme9admin:287
+msgid "Authentication services"
+msgstr "Identifikationstjenster"
+
+#: root/etc/e-smith/web/functions/sme9admin:288
+msgid "Misc. services"
+msgstr "Diverse tjenester"
+
+#: root/etc/e-smith/web/functions/sme9admin:289
+msgid "System services"
+msgstr "Systemtjenester"
+
+#: root/etc/e-smith/web/functions/sme9admin:295
+msgid "System services (Click on a service name for details) :\n"
+msgstr "Systemtjenester (klik på en tjeneste for detaljer):\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:297
+#: root/etc/e-smith/web/functions/sme9admin:311
+msgid "Action"
+msgstr "Vælg"
+
+#: root/etc/e-smith/web/functions/sme9admin:297
+msgid "Nb process"
+msgstr "Antal processer"
+
+#: root/etc/e-smith/web/functions/sme9admin:297
+msgid "Service"
+msgstr "Tjeneste"
+
+#: root/etc/e-smith/web/functions/sme9admin:335
+msgid "Stopped"
+msgstr "Stoppet"
+
+#: root/etc/e-smith/web/functions/sme9admin:353
+msgid "Started"
+msgstr "Startet"
+
+#: root/etc/e-smith/web/functions/sme9admin:369
+msgid "Listening tcp sockets, and corresponding process :\n"
+msgstr "Tcp sockets der lytter, og tilsvarende processer:\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:395
+msgid "Last update of ClamAV antivirus : %s.\n"
+msgstr "Seneste opdatering af ClamAV antivirus: %s.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:399
+msgid "Warning ! Your antivirus may not be up-to-date.\n"
+msgstr "Advarsel: Din antivirus er måske ikke opdateret.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:412
+msgid "The database contains %s virus signatures.\n"
+msgstr "Databasen indeholder %s virus signaturer.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:416
+msgid "Some feature request, comment or bug report ? send an e-mail to "
+msgstr "Ønsker, kommentarer eller fejlrapporter? Send en e-mail til "
+
+#: root/etc/e-smith/web/functions/sme9admin:416
+msgid "landry at firewall-services dot com\n"
+msgstr "landry at firewall-services dot com\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:454
+msgid "Configuration of status e-mails.\n"
+msgstr "Konfiguration af status e-mails.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:455
+msgid "If you set the frequency to 0, status e-mails are disabled. You can put only the username if the recipient is a local user.\n"
+msgstr "hvis du sætter frekvensen til 0, deaktiveres status e-mails. Du kan nøjes med at indsætte brugernavn hvis modtageren er en lokal bruger.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:457
+msgid "Status e-mails recipient"
+msgstr "Modtager af status e-mails"
+
+#: root/etc/e-smith/web/functions/sme9admin:458
+msgid "Frequency of status e-mails (* 5min)"
+msgstr "Frekvens for status e-mails (* 5 min.)"
+
+#: root/etc/e-smith/web/functions/sme9admin:463
+msgid "Configuration of MySQL connection.\n"
+msgstr "Konfiguration af MySQL forbindelser.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:464
+msgid "You shall only modify these settings if you change the default values with phpMyAdmin or mysqladmin. These settings don't directly affect the configuration of MySQL."
+msgstr "Du skal kun ændre disse indstillinger hvis du ændrer standardværdierne med phpMyadmin eller mysqladmin. Disse indstillinger har ingen direkte effekt på konfigurationen af MySQL."
+
+#: root/etc/e-smith/web/functions/sme9admin:466
+msgid "Database"
+msgstr "Database"
+
+#: root/etc/e-smith/web/functions/sme9admin:467
+msgid "MySQL user"
+msgstr "MySQL bruger"
+
+#: root/etc/e-smith/web/functions/sme9admin:468
+msgid "Password"
+msgstr "Kodeord"
+
+#: root/etc/e-smith/web/functions/sme9admin:472
+msgid "Configuration of network settings.\n"
+msgstr "Konfiguration af netværksindstillinger.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:473
+msgid "You can specify the names of the network interfaces to monitor, the e-mail domains and adresses to count in the e-mail graph (list of domains or adresses separated by semicolons. \"me@domain.fr ; other-domain.com ; virtual.domain.fr\" - the primary domain name and virtual domains are already counted). You can already choose a target for the ping latency graph (www.google.fr, default gateway,...)"
+msgstr "Du kan angive hvilke netværksstjenster der skal overvåges, e-mail domæner og adresser som inkluderes i e-mail grafen (lister med domæner eller adresser adskilles med semikolon. \"mig@domaine.dk ; andet-domaine.com ; virtuelt.domaine.dk\" - Det primære domæne og virtuelle domæner er i forvejen inkluderet). Du kan også vælge et mål til brug i ping ventetid (www.google.dk, standard gateway, ...)"
+
+#: root/etc/e-smith/web/functions/sme9admin:476
+msgid "Other e-mail domains"
+msgstr "Andre e-mail domæner"
+
+#: root/etc/e-smith/web/functions/sme9admin:477
+msgid "Ping target"
+msgstr "Ping mål"
+
+#: root/etc/e-smith/web/functions/sme9admin:481
+msgid "Web panel configuration.\n"
+msgstr "Web panel konfiguration.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:482
+msgid "You can set the format and size of graphs, and the bounds upon which pppoe and vpn connections need to be highlighted.\n"
+msgstr "Du kan vælge form og størrelse på grafer, og grænser for hvornår pppoe og vpn forbindelser skal fremhæves.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:488
+msgid "Graphs width"
+msgstr "Grafers bredde"
+
+#: root/etc/e-smith/web/functions/sme9admin:489
+msgid "Graphs height"
+msgstr "Grafers højde"
+
+#: root/etc/e-smith/web/functions/sme9admin:490
+msgid "Pppoe disconnection lasting more than (in minutes)"
+msgstr "Pppoe afbrydelser med varighed i mere end (i minutter)"
+
+#: root/etc/e-smith/web/functions/sme9admin:491
+msgid "Pppoe connection lasting less than (in hours)"
+msgstr "Pppoe forbindelser med varighed i mindre end (i timer)"
+
+#: root/etc/e-smith/web/functions/sme9admin:492
+msgid "Vpn connection lasting more than (in hours)"
+msgstr "Vpn forbindelser med varighed i mere end (i timer)"
+
+#: root/etc/e-smith/web/functions/sme9admin:496
+msgid "Configuration of hardware sensors.\n"
+msgstr "Konfiguration af hardware sensorer.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:497
+msgid "For the hard disks, generally you have 'hda' or 'hdb' with IDE and 'sda' or 'sdb' with SATA/SCSI. If you have only on disk, let the second field blank. You can choose to activate the computing of the main directories' size of SME. (maybe long and resource-consuming on large disks). To find available sensors, execute 'sensors' in a shell, and look for the keywords corresponding to the working sensors ('temp1','CPU Temp','MB Temp','fan3',....). Let the fields blank if you have no sensors available.\n"
+msgstr "For harddiskene har du nomalt en \"hda\" eller \"hdb\" med IDE og \"sda eller \"sdb\" med SATA/SCSI. Hvis du kun har én harddisk, så lad det andet felt være tomt. Du kan vælge at aktivere beregning af de primære mappers størrelse på SME serveren. (du -s) (den kan være tidskrævende på store diske). For at finde tilgængelige sensorer, eksekver kommandoen \"sensors\" i en shell, og kik efter nøgleordene for de aktive sensorer (\"temp1\", \"CPU Temp\", \"MB TEMP\", \"fan3\", ...). Lad felterne være tomme hvis der ikke er tilgængelige sensorer.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:499
+msgid "Activate du -s:"
+msgstr "Aktiver du -s:"
+
+#: root/etc/e-smith/web/functions/sme9admin:501
+msgid "First hard disk"
+msgstr "Første harddisk"
+
+#: root/etc/e-smith/web/functions/sme9admin:502
+msgid "Second hard disk"
+msgstr "Anden harddisk"
+
+#: root/etc/e-smith/web/functions/sme9admin:503
+msgid "First sensor (cpu)"
+msgstr "Første sensor (cpu)"
+
+#: root/etc/e-smith/web/functions/sme9admin:504
+msgid "Second sensor (motherboard)"
+msgstr "Anden sensor (bundkort)"
+
+#: root/etc/e-smith/web/functions/sme9admin:505
+msgid "Third sensor (fan)"
+msgstr "Tredje sensor (fan)"
+
+#: root/etc/e-smith/web/functions/sme9admin:510
+msgid "Configuration of alerts.\n"
+msgstr "Konfiguration af adviseringer.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:511
+msgid "You should notice that these values are not limits FOR the system, but just values beyond which an alert e-mail is sent. If you set the limit to 0, the alert is disabled. You can put only the username if the recipient is a local user.\n"
+msgstr "Bemærk. Disse værdier er IKKE grænseværdier for systemet, men kun grænser som - hvis de overskrides - betyder, at der sendes en adviserings e-mail. Hvis du sætter grænsen til 0, så deaktiveres adviseringer. Du kan nøjes med at angive brugernavn på lokale brugere.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:514
+msgid "Alert e-mails recipient "
+msgstr "Modtager af adviserings e-mail "
+
+#: root/etc/e-smith/web/functions/sme9admin:524
+#: root/etc/e-smith/web/functions/sme9admin:540
+msgid "Save"
+msgstr "Gem"
+
+#: root/etc/e-smith/web/functions/sme9admin:536
+msgid "Alert configuration.\n"
+msgstr "Konfiguration af adviseringer.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:536
+msgid "Put 0 to desactivate it.\n"
+msgstr "Indsæt 0 for at deaktivere.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:574
+#: root/etc/e-smith/web/functions/sme9admin:582
+msgid "\"%s\" is not a valid e-mail address.\n"
+msgstr "\"%s\" er ikke en gyldig e-mail adresse.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:594
+#: root/etc/e-smith/web/functions/sme9admin:619
+msgid "\"%s\" is not an integer numeric value for the setting '%s'.\n"
+msgstr "\"%s\" er ikke en heltalsværdi for opsætningen '%s'.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:602
+msgid "Status e-mails have been disabled.\n"
+msgstr "Adviserings e-mails er deaktiveret.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:641
+msgid "New settings have been saved."
+msgstr "De nye indstillinger er gemt."
+
+#: root/etc/e-smith/web/functions/sme9admin:645
+msgid "The settings are the same, nothing has been modified.\n"
+msgstr "Indstillingen er den samme, intet er ændret.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:653
+msgid "An error occured. Check the settings you provided."
+msgstr "Der opstod en fejl. Kontroller de indtastede indstilliner."
+
+#: root/etc/e-smith/web/functions/sme9admin:656
+#: root/etc/e-smith/web/functions/sme9admin:687
+#: root/etc/e-smith/web/functions/sme9admin:717
+#: root/etc/e-smith/web/functions/sme9admin:796
+#: root/etc/e-smith/web/functions/sme9admin:882
+#: root/etc/e-smith/web/functions/sme9admin:1175
+#: root/etc/e-smith/web/functions/sme9admin:1216
+#: root/etc/e-smith/web/functions/sme9admin:1251
+#: root/etc/e-smith/web/functions/sme9admin:1268
+#: root/etc/e-smith/web/functions/sme9admin:1383
+#: root/etc/e-smith/web/functions/sme9admin:1404
+#: root/etc/e-smith/web/functions/sme9admin:1550
+msgid "Back\n"
+msgstr "Tilbage\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:698
+msgid "These differents tests may produce false positives, do not take care of them."
+msgstr "Disse tests kan producere falske positive, tag dem ikke alvorligt."
+
+#: root/etc/e-smith/web/functions/sme9admin:699
+msgid "Execute them only if you know what they do, and how to analyse their results."
+msgstr "Eksekver dem kun, hvis du ved hvad du gør, og er i stand til at analysere resulterne."
+
+#: root/etc/e-smith/web/functions/sme9admin:701
+msgid "Test http service"
+msgstr "Test http tjenesten"
+
+#: root/etc/e-smith/web/functions/sme9admin:703
+msgid "Test samba service"
+msgstr "Test Samba tjenesten"
+
+#: root/etc/e-smith/web/functions/sme9admin:705
+msgid "Test network latency"
+msgstr "Test netværks forsinkelse"
+
+#: root/etc/e-smith/web/functions/sme9admin:707
+msgid "Test ftp service"
+msgstr "Test ftp tjeneste"
+
+#: root/etc/e-smith/web/functions/sme9admin:709
+msgid "Test ssh service"
+msgstr "Test ssh tjeneste"
+
+#: root/etc/e-smith/web/functions/sme9admin:711
+msgid "Test pop service"
+msgstr "Test pop tjeneste"
+
+#: root/etc/e-smith/web/functions/sme9admin:713
+msgid "Test smtp service"
+msgstr "Test smtp tjeneste"
+
+#: root/etc/e-smith/web/functions/sme9admin:739
+msgid "Execution of 'http@' (should return html source code of server's homepage):"
+msgstr "Eksekver \"http@\" (bør returnere html kildekode for serverens hjemmeside):"
+
+#: root/etc/e-smith/web/functions/sme9admin:748
+msgid "Execution of 'smbcontrol smbd ping' (samba server answers giving its PID):"
+msgstr "Eksekver \"smbcontrol smdb ping\" (samba serveren svarer med dens PID):"
+
+#: root/etc/e-smith/web/functions/sme9admin:757
+msgid "Execution of 'ping google.fr -c 1' (latency):"
+msgstr "Eksekver \"ping google.fr -c 1\" (forsinkelse):"
+
+#: root/etc/e-smith/web/functions/sme9admin:765
+msgid "Execution of 'echo \"SYST\" | nc %s 21' (ftp opened to the external network):"
+msgstr "Eksekver \"echo \"SYST\" | nc %s 21\" (ftp åbent til det eksterne netværk):"
+
+#: root/etc/e-smith/web/functions/sme9admin:773
+msgid "Execution of 'echo \"hello\" | nc %s 22' (ssh opened to the external network):"
+msgstr "Eksekver \"echo \"hello\" | nc %s 22\" (ssh åbent til det eksterne netværk):"
+
+#: root/etc/e-smith/web/functions/sme9admin:781
+msgid "Execution of 'echo \"quit\" | nc %s 110' (pop server running):"
+msgstr "Eksekver \"echo \"quit\" | nc %s 110 (pop server kører):"
+
+#: root/etc/e-smith/web/functions/sme9admin:789
+msgid "Execution of 'echo \"quit\" | nc -i 2 %s 25' (smtp server running):"
+msgstr "Eksekver 'echo \"quit\" | nc -i 2%s 25' (smtp server kører):"
+
+#: root/etc/e-smith/web/functions/sme9admin:795
+msgid "Another test\n"
+msgstr "En anden test\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:809
+#: root/etc/e-smith/web/functions/sme9admin:821
+msgid "Check MySQL connection settings.\n"
+msgstr "Kontroller MySQL forbindelsesopsætning.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:844
+msgid "one hour"
+msgstr "en time"
+
+#: root/etc/e-smith/web/functions/sme9admin:845
+msgid "six hours"
+msgstr "seks timer"
+
+#: root/etc/e-smith/web/functions/sme9admin:846
+msgid "the day"
+msgstr "dag"
+
+#: root/etc/e-smith/web/functions/sme9admin:847
+msgid "three days"
+msgstr "tre dage"
+
+#: root/etc/e-smith/web/functions/sme9admin:848
+msgid "one week"
+msgstr "en uge"
+
+#: root/etc/e-smith/web/functions/sme9admin:849
+msgid "one month"
+msgstr "en måned"
+
+#: root/etc/e-smith/web/functions/sme9admin:850
+msgid "six months"
+msgstr "seks måneder"
+
+#: root/etc/e-smith/web/functions/sme9admin:851
+msgid "one year"
+msgstr "et år"
+
+#: root/etc/e-smith/web/functions/sme9admin:909
+msgid "System load for the apache web server (httpd-e-smith & httpd-admin processes) on "
+msgstr "Systembelastning for Apache web server (httpd-e-smith & httpd-admin processer) på "
+
+#: root/etc/e-smith/web/functions/sme9admin:915
+msgid "System load for the transparent http/ftp proxy squid on "
+msgstr "Systembelastning for den transparante http/ftp squid på "
+
+#: root/etc/e-smith/web/functions/sme9admin:923
+#: root/etc/e-smith/web/functions/sme9admin:944
+#: root/etc/e-smith/web/functions/sme9admin:977
+#: root/etc/e-smith/web/functions/sme9admin:993
+#: root/etc/e-smith/web/functions/sme9admin:1007
+#: root/etc/e-smith/web/functions/sme9admin:1028
+msgid "IP Address"
+msgstr "IP-adresse"
+
+#: root/etc/e-smith/web/functions/sme9admin:925
+#: root/etc/e-smith/web/functions/sme9admin:979
+msgid "Hostname"
+msgstr "Værtsnavn"
+
+#: root/etc/e-smith/web/functions/sme9admin:926
+#: root/etc/e-smith/web/functions/sme9admin:942
+#: root/etc/e-smith/web/functions/sme9admin:960
+#: root/etc/e-smith/web/functions/sme9admin:990
+#: root/etc/e-smith/web/functions/sme9admin:1006
+#: root/etc/e-smith/web/functions/sme9admin:1025
+msgid "Start"
+msgstr "Start"
+
+#: root/etc/e-smith/web/functions/sme9admin:927
+#: root/etc/e-smith/web/functions/sme9admin:943
+#: root/etc/e-smith/web/functions/sme9admin:961
+#: root/etc/e-smith/web/functions/sme9admin:991
+#: root/etc/e-smith/web/functions/sme9admin:1026
+msgid "End"
+msgstr "Slut"
+
+#: root/etc/e-smith/web/functions/sme9admin:930
+msgid "Detailed list of the last times a host has connected to a samba share.\n"
+msgstr "Detaljeret liste over sidste gang en vært har tilsluttet sig til et samba share.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:933
+msgid "System load for the samba server (smbd & nmbd processes) on "
+msgstr "Systembelastning for samba server (smbd & nmbd processer) på "
+
+#: root/etc/e-smith/web/functions/sme9admin:946
+#: root/etc/e-smith/web/functions/sme9admin:1031
+msgid "Written data (Ko)"
+msgstr "Skrevet data (Ko)"
+
+#: root/etc/e-smith/web/functions/sme9admin:947
+#: root/etc/e-smith/web/functions/sme9admin:1032
+msgid "Read data (Ko)"
+msgstr "Læst data (Ko)"
+
+#: root/etc/e-smith/web/functions/sme9admin:950
+msgid "Detailed list of the last connections (on the last 7 days) to the afp service (Apple File Protocol).\n"
+msgstr "Detaljeret liste over seneste tilslutninger (i de sidste 7 dage) til afp tjeneste (Apple File Protokol).\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:952
+msgid "System load for the appletalk server (atalkd, papd, afpd and cnid_metad processes)."
+msgstr "Systembelastning for appletalk server (atalkd, papd, afpd and cnid_metad processer)."
+
+#: root/etc/e-smith/web/functions/sme9admin:962
+#: root/etc/e-smith/web/functions/sme9admin:992
+#: root/etc/e-smith/web/functions/sme9admin:1027
+msgid "Duration"
+msgstr "Varighed"
+
+#: root/etc/e-smith/web/functions/sme9admin:963
+msgid "Client IP address"
+msgstr "Klient IP adresse"
+
+#: root/etc/e-smith/web/functions/sme9admin:964
+msgid "Client local IP address"
+msgstr "Klient lokal IP adresse"
+
+#: root/etc/e-smith/web/functions/sme9admin:965
+#: root/etc/e-smith/web/functions/sme9admin:995
+msgid "Incoming data (Ko)"
+msgstr "Indkommende data (Ko)"
+
+#: root/etc/e-smith/web/functions/sme9admin:966
+#: root/etc/e-smith/web/functions/sme9admin:996
+msgid "Outgoing data (ko)"
+msgstr "Udgående data (ko)"
+
+#: root/etc/e-smith/web/functions/sme9admin:970
+msgid "Detailed list of vpn connections (Virtual Private Network).\n"
+msgstr "Detaljeret liste over vpn forbindelser (Virtuelt Privat Netværk).\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:978
+msgid "MAC Address"
+msgstr "MAC adresse"
+
+#: root/etc/e-smith/web/functions/sme9admin:980
+msgid "Date of renewal"
+msgstr "Dato på fornyelse"
+
+#: root/etc/e-smith/web/functions/sme9admin:983
+msgid "List of the last dhcp leases renewal (Dynamic Host Control Protocol).\n"
+msgstr "Liste over de seneste fornyelser af dhcp leases (Dynamic Host Control Protocol).\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:994
+msgid "Connection peer"
+msgstr "Connection peer"
+
+#: root/etc/e-smith/web/functions/sme9admin:999
+msgid "Detailed list of ADSL/PPPoE connections.\n"
+msgstr "Detaljeret liste over ADSL/PPPoE forbindelser.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1009
+#: root/etc/e-smith/web/functions/sme9admin:1030
+msgid "Connected ?"
+msgstr "Forbundet?"
+
+#: root/etc/e-smith/web/functions/sme9admin:1009
+#: root/etc/e-smith/web/functions/sme9admin:1030
+msgid "No"
+msgstr "Nej"
+
+#: root/etc/e-smith/web/functions/sme9admin:1009
+#: root/etc/e-smith/web/functions/sme9admin:1030
+msgid "Yes"
+msgstr "Ja"
+
+#: root/etc/e-smith/web/functions/sme9admin:1013
+msgid "Detailed list of ssh connections (Secure SHell).\n"
+msgstr "Detaljeret lister over ssh forbindelser (Secure SHell).\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1038
+msgid "Detailed list of the last connections (on the last 7 days) to the ftp service (File Transfer Protocol).\n"
+msgstr "Detaljeret liste over over seneste forbindelser ( på de sidste 7 dage) til ftp tjeneste (File Transfer Protocol).\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1064
+msgid "See the records on "
+msgstr "Se poster på "
+
+#: root/etc/e-smith/web/functions/sme9admin:1080
+#: root/etc/e-smith/web/functions/sme9admin:1135
+msgid "MySQL error : Impossible to prepare SQL query \"%s\" : %s\n"
+msgstr "MySQL fejl: Umuligt at forberede SQL forespørgsel \"%s\" : %s\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1081
+#: root/etc/e-smith/web/functions/sme9admin:1136
+msgid "MySQL error : Can't execute query : %s\n"
+msgstr "MySQL fejl: kan ikke eksekvere forspørgsel: %s\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1089
+#: root/etc/e-smith/web/functions/sme9admin:1094
+msgid "Connections which lasted "
+msgstr "Forbindelser som varede "
+
+#: root/etc/e-smith/web/functions/sme9admin:1090
+msgid "more than %s hours are highlighted.\n"
+msgstr "mere end %s timer er fremhævet.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1095
+msgid "less than %s hours are highlighted.\n"
+msgstr "mindre end %s timer er fremhævet.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1096
+msgid "Disconnections which lasted "
+msgstr "Afbrudte forbindelser som varede "
+
+#: root/etc/e-smith/web/functions/sme9admin:1097
+msgid "more than %s minutes are highlighted.\n"
+msgstr "mere end %s minutter er fremhævet.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1101
+msgid " root connections are highlighted.\n"
+msgstr "root forbindelser er fremhævet.\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1101
+msgid "Successful "
+msgstr "Vellykket "
+
+#: root/etc/e-smith/web/functions/sme9admin:1142
+msgid "Disconnection lasted more than %s minutes"
+msgstr "Afbrudt forbindelse varede mere end %s minutter"
+
+#: root/etc/e-smith/web/functions/sme9admin:1193
+msgid "Error at RRDs::graph(%s) : %s\n"
+msgstr "Fejl ved RRDs::graph(%s) : %s\n"
+
+#: root/etc/e-smith/web/functions/sme9admin:1208
+#: root/etc/e-smith/web/functions/sme9admin:1264
+#: root/etc/e-smith/web/functions/sme9admin:1400
+msgid "View graphs on "
+msgstr "Vis graf for "
+
+#: root/etc/e-smith/web/functions/sme9admin:1218
+msgid "Temperatures"
+msgstr "Temperaturer"
+
+#: root/etc/e-smith/web/functions/sme9admin:1238
+msgid "Hardware temperatures (Processor, motherboard, hard disks)."
+msgstr "Hardware temperaturer (processor, bundkort, hard disks)."
+
+#: root/etc/e-smith/web/functions/sme9admin:1240
+msgid "Processor fan speed."
+msgstr "Processorens blæserhastighed"
+
+#: root/etc/e-smith/web/functions/sme9admin:1241
+#: root/etc/e-smith/web/functions/sme9admin:1245
+msgid "Fan speed"
+msgstr "Blæserhastighed"
+
+#: root/etc/e-smith/web/functions/sme9admin:1242
+#: root/etc/e-smith/web/functions/sme9admin:1246
+#: root/etc/e-smith/web/functions/sme9admin:1247
+#: root/etc/e-smith/web/functions/sme9admin:1248
+#: root/etc/e-smith/web/functions/sme9admin:1249
+msgid "Rpm"
+msgstr "Rpm"
+
+#: root/etc/e-smith/web/functions/sme9admin:1271
+msgid "Number of opened tcp connections for ssh, ftp, vpn, afp and netbios protocols."
+msgstr "Antal åbne tcp forbindelser for ssh, ftp, vpn, afp og netbios protokoller"
+
+#: root/etc/e-smith/web/functions/sme9admin:1272
+msgid "Opened connections"
+msgstr "Åbne forbindelser"
+
+#: root/etc/e-smith/web/functions/sme9admin:1289
+msgid "Number of dhcp leases renewals and opened samba shares."
+msgstr "Antal fornyede dhcp forbindelser og åbne samba fællesdrev."
+
+#: root/etc/e-smith/web/functions/sme9admin:1290
+msgid "Dhcp & Smbstatus"
+msgstr "Status for dhcp & smb"
+
+#: root/etc/e-smith/web/functions/sme9admin:1300
+msgid "Number of incoming/outgoing e-mails and amount of spam/viruses filtered."
+msgstr "Antal indgående/udgående e-mails og mængden af filtreret spam/virus."
+
+#: root/etc/e-smith/web/functions/sme9admin:1301
+msgid "Incoming/outgoing/spam/virus e-mails"
+msgstr "Indgående/udgående/spam/virus e-mails"
+
+#: root/etc/e-smith/web/functions/sme9admin:1308
+msgid "Incoming mail"
+msgstr "Indgående e-mail"
+
+#: root/etc/e-smith/web/functions/sme9admin:1308
+msgid "Outgoing mail"
+msgstr "Udgående e-mail"
+
+#: root/etc/e-smith/web/functions/sme9admin:1321
+msgid "Average and maximal ping with the selected target."
+msgstr "Gennemsnits og maksimal ping på det valgte mål."
+
+#: root/etc/e-smith/web/functions/sme9admin:1322
+msgid "Target ping latency"
+msgstr "Målets ping ventetid"
+
+#: root/etc/e-smith/web/functions/sme9admin:1330
+msgid "Avg ping"
+msgstr "Gnms ping"
+
+#: root/etc/e-smith/web/functions/sme9admin:1330
+msgid "Max ping"
+msgstr "Maks ping"
+
+#: root/etc/e-smith/web/functions/sme9admin:1331
+msgid "Pkt loss"
+msgstr "Pkt tab"
+
+#: root/etc/e-smith/web/functions/sme9admin:1337
+msgid "Load on the local network interface."
+msgstr "Belastning på det interne netværkskort"
+
+#: root/etc/e-smith/web/functions/sme9admin:1338
+msgid "Local network load"
+msgstr "Internt netværksbelastning"
+
+#: root/etc/e-smith/web/functions/sme9admin:1343
+#: root/etc/e-smith/web/functions/sme9admin:1356
+msgid "Incoming bytes"
+msgstr "Indkommende bytes"
+
+#: root/etc/e-smith/web/functions/sme9admin:1343
+#: root/etc/e-smith/web/functions/sme9admin:1356
+msgid "Outgoing bytes"
+msgstr "Udgående bytes"
+
+#: root/etc/e-smith/web/functions/sme9admin:1350
+msgid "Load on the external network interface (to internet)."
+msgstr "Belastning på det eksterne netværkskort (til internettet)"
+
+#: root/etc/e-smith/web/functions/sme9admin:1351
+msgid "External network load"
+msgstr "Ekstern netværksbelastning"
+
+#: root/etc/e-smith/web/functions/sme9admin:1359
+msgid "Network load on the server except routing."
+msgstr "Netværksbelastning på serveren eksklusiv routning."
+
+#: root/etc/e-smith/web/functions/sme9admin:1361
+msgid "If the blue curve is :"
+msgstr "Hvis den blå kurve er:"
+
+#: root/etc/e-smith/web/functions/sme9admin:1363
+msgid "positive => download from the internet"
+msgstr "Positiv => Download fra internettet"
+
+#: root/etc/e-smith/web/functions/sme9admin:1364
+msgid "negative => upload from the local network"
+msgstr "Negativ => Opload fra lokalnettet"
+
+#: root/etc/e-smith/web/functions/sme9admin:1366
+msgid "If the red curve is :"
+msgstr "Hvis den røde kurve er:"
+
+#: root/etc/e-smith/web/functions/sme9admin:1368
+msgid "positive => upload from the internet"
+msgstr "Positiv => Opload fra internettet"
+
+#: root/etc/e-smith/web/functions/sme9admin:1369
+msgid "negative => download from the local network"
+msgstr "Negativ => Download fra lokalnettet"
+
+#: root/etc/e-smith/web/functions/sme9admin:1373
+msgid "Network load on the server"
+msgstr "Netværksbelastning på serveren"
+
+#: root/etc/e-smith/web/functions/sme9admin:1407
+msgid "Distribution of cpu usage for system, user and niced processes."
+msgstr "Fordeling af cpu belastning på system, brugere og interne processer"
+
+#: root/etc/e-smith/web/functions/sme9admin:1408
+msgid "Cpu usage"
+msgstr "Cpu forbrug"
+
+#: root/etc/e-smith/web/functions/sme9admin:1421
+msgid "System load average on 1mn,5mn,15mn compared to cpu usage."
+msgstr "Systembelastning, gennemsnit på 1 min, 5 min, 15 min i forhold til cpu forbrug"
+
+#: root/etc/e-smith/web/functions/sme9admin:1422
+msgid "System load / Cpu %"
+msgstr "Systembelastning / Cpu %"
+
+#: root/etc/e-smith/web/functions/sme9admin:1442
+msgid "Number of running processes on the server, and kernel run queue size."
+msgstr "Antal kørende processer på serveren, og størrelsen på kernel run queue"
+
+#: root/etc/e-smith/web/functions/sme9admin:1443
+msgid "Number of processes / run queue size"
+msgstr "Antal processer / kerne kø-størrelse"
+
+#: root/etc/e-smith/web/functions/sme9admin:1449
+msgid "Processes"
+msgstr "Processer"
+
+#: root/etc/e-smith/web/functions/sme9admin:1449
+msgid "Run queue"
+msgstr "Run queue"
+
+#: root/etc/e-smith/web/functions/sme9admin:1456
+msgid "Server uptime."
+msgstr "Serverenes oppetid."
+
+#: root/etc/e-smith/web/functions/sme9admin:1457
+#: root/etc/e-smith/web/functions/sme9admin:1462
+msgid "Uptime"
+msgstr "Oppetid"
+
+#: root/etc/e-smith/web/functions/sme9admin:1458
+msgid "Days"
+msgstr "Dage"
+
+#: root/etc/e-smith/web/functions/sme9admin:1468
+msgid "Detailed usage of the server memory."
+msgstr "Detaljeret brug af serverens hukommelse."
+
+#: root/etc/e-smith/web/functions/sme9admin:1469
+msgid "Memory usage"
+msgstr "Hukommelsesbrug"
+
+#: root/etc/e-smith/web/functions/sme9admin:1470
+#: root/etc/e-smith/web/functions/sme9admin:1491
+#: root/etc/e-smith/web/functions/sme9admin:1523
+msgid "Bytes"
+msgstr "Bytes"
+
+#: root/etc/e-smith/web/functions/sme9admin:1477
+msgid "Buffers"
+msgstr "Buffer"
+
+#: root/etc/e-smith/web/functions/sme9admin:1477
+msgid "Cached"
+msgstr "Cached"
+
+#: root/etc/e-smith/web/functions/sme9admin:1477
+#: root/etc/e-smith/web/functions/sme9admin:1496
+#: root/etc/e-smith/web/functions/sme9admin:1533
+msgid "Used"
+msgstr "Brugt"
+
+#: root/etc/e-smith/web/functions/sme9admin:1478
+#: root/etc/e-smith/web/functions/sme9admin:1496
+#: root/etc/e-smith/web/functions/sme9admin:1533
+msgid "Free"
+msgstr "Ledig"
+
+#: root/etc/e-smith/web/functions/sme9admin:1478
+#: root/etc/e-smith/web/functions/sme9admin:1496
+msgid "Total"
+msgstr "I alt"
+
+#: root/etc/e-smith/web/functions/sme9admin:1489
+msgid "Swap usage (virtual memory) on the server's hard disk."
+msgstr "Swap brug (virtuel hukommelse) på serverens harddisk."
+
+#: root/etc/e-smith/web/functions/sme9admin:1490
+msgid "Swap usage"
+msgstr "Swap brug"
+
+#: root/etc/e-smith/web/functions/sme9admin:1505
+msgid "Amount of raw data read/written on the hard disk."
+msgstr "Mængden af raw data læst/skrevet på harddisken."
+
+#: root/etc/e-smith/web/functions/sme9admin:1506
+msgid "Donnees ecrites/lues"
+msgstr "Data læst/skrevet"
+
+#: root/etc/e-smith/web/functions/sme9admin:1507
+msgid "Blocks/s"
+msgstr "Blocks/s"
+
+#: root/etc/e-smith/web/functions/sme9admin:1512
+msgid "Read"
+msgstr "Læst"
+
+#: root/etc/e-smith/web/functions/sme9admin:1512
+msgid "Written"
+msgstr "Skrevet"
+
+#: root/etc/e-smith/web/functions/sme9admin:1522
+msgid "Hard disk usage"
+msgstr "Harddisk brug"
+
+#: root/etc/e-smith/web/functions/sme9admin:1546
+msgid "Detailed usage of disk space (squid cache, mysql databases, log files, user files..)."
+msgstr "Detaljeret brug af harddisk (squid cache, mysql databaser, log filer, bruger filer..)."
+
+#: root/etc/e-smith/web/functions/sme9admin:1547
+msgid "Disk space usage."
+msgstr "Disk plads brug."
+
+#: root/usr/bin/sme9admind:1134
+msgid "Error at RRDs::update"
+msgstr "Fejl ved RRDs::update"
+
+#: root/usr/bin/sme9admind:1148
+msgid "Server status\n"
+msgstr "Server status\n"
+
+#: root/usr/bin/sme9admind:1149
+msgid "Number of opened connections : "
+msgstr "Antal åbne forbindelser: "
+
+#: root/usr/bin/sme9admind:1176
+msgid "During the last 5 minutes, %s incoming e-mails were detected, "
+msgstr "I de seneste 5 minutter, blev der registreret %s indkommende e-mails, "
+
+#: root/usr/bin/sme9admind:1177
+msgid "you had set the alert limit to %s incoming e-mails.\n"
+msgstr "du har sat advarselsgrænsen til %s indkommende e-mails.\n"
+
+#: root/usr/bin/sme9admind:1178
+msgid "(Possible reasons : do you receive spam ? a mailbomb ? mailing-lists ?)\n"
+msgstr "(Mulig årsag: Modtager du spam? en mailbomber? mailing-lister?)\n"
+
+#: root/usr/bin/sme9admind:1179 root/usr/bin/sme9admind:1189
+#: root/usr/bin/sme9admind:1199 root/usr/bin/sme9admind:1209
+#: root/usr/bin/sme9admind:1219 root/usr/bin/sme9admind:1229
+#: root/usr/bin/sme9admind:1239 root/usr/bin/sme9admind:1249
+#: root/usr/bin/sme9admind:1259 root/usr/bin/sme9admind:1269
+#: root/usr/bin/sme9admind:1279 root/usr/bin/sme9admind:1289
+msgid "If you have access to the server-manager, use this link to modify the limit :\n"
+msgstr "Hvis du har adgang til server-manager, så brug dette link til at redigere grænsen:\n"
+
+#: root/usr/bin/sme9admind:1186
+msgid "During the last 5 minutes, %s outgoing e-mails were detected, "
+msgstr "I de sidste 5 minutter, er der registreret %s udgående e-mails, "
+
+#: root/usr/bin/sme9admind:1187
+msgid "you had set the alert limit to %s outgoing e-mails.\n"
+msgstr "Du har sat advarselsgrænsen til %s udgående e-mails.\n"
+
+#: root/usr/bin/sme9admind:1188
+msgid "(Possible reasons : do you send spam ? administrate a mailing-list ?)\n"
+msgstr "(Mulig årsag: Sender du spam? Administrerer en mailing-liste?)\n"
+
+#: root/usr/bin/sme9admind:1196
+msgid "Your hard disk is %s %% full, "
+msgstr "Din harddisk er %s %% fuld, "
+
+#: root/usr/bin/sme9admind:1197 root/usr/bin/sme9admind:1207
+msgid "you had set the alert limit to %s %%.\n"
+msgstr "du har sat advarselsgrænsen til %s %%.\n"
+
+#: root/usr/bin/sme9admind:1198
+msgid "(Advice : free space by deleting temp files, or upgrade your disk space)\n"
+msgstr "(Et godt råd: Frigiv plads ved at slette temp filer, eller opgrader din diskstørrelse)\n"
+
+#: root/usr/bin/sme9admind:1206
+msgid "Your processor is %s %% loaded, "
+msgstr "Din processor er %s %% belastet, "
+
+#: root/usr/bin/sme9admind:1208
+msgid "(Possible reasons : Is there a crashed process ? an intense and prolonged activity on the server ?)\n"
+msgstr "(Mulig årsag: Kører en ødelagt proces? En intensiv og længerevarende aktivitet på serveren?)\n"
+
+#: root/usr/bin/sme9admind:1216 root/usr/bin/sme9admind:1226
+msgid "The temperature reported by sensor %s is %s degrees C, "
+msgstr "Sensor %s har registreret temperaturen %s grader celsius, "
+
+#: root/usr/bin/sme9admind:1217 root/usr/bin/sme9admind:1227
+#: root/usr/bin/sme9admind:1237 root/usr/bin/sme9admind:1247
+msgid "you had set the alert limit to %s degrees C.\n"
+msgstr "du har sat advarselsgrænsen til &s grader celsius.\n"
+
+#: root/usr/bin/sme9admind:1218 root/usr/bin/sme9admind:1228
+msgid "(Advice : check the fans, and if the room is well ventilated or under AC.)\n"
+msgstr "(Et godt råd: Kontroller ventilatorerne, og om rummet har aircondition(AC))\n"
+
+#: root/usr/bin/sme9admind:1236 root/usr/bin/sme9admind:1246
+msgid "The temperature of %s hard disk is %s degrees C, "
+msgstr "Harddisken &s temperatur er &s grader celsius, "
+
+#: root/usr/bin/sme9admind:1238 root/usr/bin/sme9admind:1248
+msgid "(Advice : check if the server case and the hard disks are well cooled.)\n"
+msgstr "(Et godt råd: Kontroller om serverkabinet og harddiskene velafkøles effektivt.)\n"
+
+#: root/usr/bin/sme9admind:1256
+msgid "There are %s opened connections to the SAMBA service, "
+msgstr "Der er &s åbne forbindelser til SAMBA tjenesten, "
+
+#: root/usr/bin/sme9admind:1257
+msgid "you had set the alert limit to %s connections.\n"
+msgstr "Du har sat advarselsgrænsen til %s forbindelser.\n"
+
+#: root/usr/bin/sme9admind:1258
+msgid "(Advice : if you encounter problems accessing local neighboorhood, kill some connections.)\n"
+msgstr "(Et godt råd: Hvis du oplever problemer med at få adgang til lokale netværk, så luk nogle forbindelser ned.)\n"
+
+#: root/usr/bin/sme9admind:1266
+msgid "There are %s opened SSH sessions on the server, "
+msgstr "Der er %s åbne SSH forbindelser på serveren, "
+
+#: root/usr/bin/sme9admind:1267 root/usr/bin/sme9admind:1277
+#: root/usr/bin/sme9admind:1287
+msgid "you had set the alert limit to %s sessions.\n"
+msgstr "Du har sat advarselsgrænsen til &s forbindelser.\n"
+
+#: root/usr/bin/sme9admind:1268
+msgid "(Advice : check if it is known administrative connections, and not hackers.)\n"
+msgstr "(Et godt råd: Kontroller at det er kendte administrative forbindelser, og ikke hackere.)\n"
+
+#: root/usr/bin/sme9admind:1276
+msgid "There are %s opened FTP sessions on the server, "
+msgstr "Der er %s åbne FTP forbindelser på serveren, "
+
+#: root/usr/bin/sme9admind:1278 root/usr/bin/sme9admind:1288
+msgid "(Advice : check that it is authorized users only.)\n"
+msgstr "(Et godt råd: Kontroller, at der kun er autoriserede brugere.)\n"
+
+#: root/usr/bin/sme9admind:1286
+msgid "There are %s opened VPN sessions on the server, "
+msgstr "Der er %s åbne VPN forbindelser på serveren, "

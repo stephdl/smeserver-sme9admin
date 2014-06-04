@@ -1,0 +1,1295 @@
+#!/usr/bin/perl -w
+# sme9admin - demon perl collectant les statistiques du systeme
+# Copyright (C) 2006
+# This file is distributed under the GPL license.
+# Landry Breuil <landry@firewall-services.com>, 2006.
+# version 1.2 : Pascal Schirrmann <schirrms@schirrms.net>, 2011
+
+#--------------------------------------
+#Declaration des dependances/inclusions
+use strict;
+use warnings;
+use DBD::mysql;
+use sigtrap;
+use RRDs;
+use esmith::ConfigDB;
+use Mail::Send;
+
+#pour le parsage des dates format TAI64
+use Time::TAI64 qw/:tai64/;
+#pour l'utilisation de gettext
+use POSIX;
+use Locale::gettext;
+
+#----------------------------------
+#Declaration des variables globales
+my $progname='sme9admin';
+# si $DEBUG supérieur à 0, affichage d'infos de debug via la fonction debug()
+my $DEBUG = 0;
+
+#variables d'environnement du serveur
+my ($DomainName,$SystemName,$SystemMode,$InternalInterface,$ExternalInterface,$InternalIP,$ExternalIP,@MailDomainsMatch);
+#----------------------------------
+#hash faisant correspondre la cle (nom du param) a sa valeur [ICI, CE SONT LES VALEURS PAR DEFAUT !!]
+#idem dans le panel /etc-e-smith/web/functions/sme9admin
+my %params=(
+    'DbName'=>"sme9admin",
+    'DbPassword'=>"pass",
+    'DbUser'=>"sme9admin",
+#    'if_internal'=>"eth0",
+#    'if_external'=>"eth1",
+
+    'ImgFormat'=>"PNG",
+    'ImgWidth'=>"500",
+    'ImgHeight'=>"300",
+    # /sbin/e-smith/db domains keys pour voir les autres domaines du serveur
+    'OtherMailDomains'=>"",
+    'PingTarget'=>"www.google.fr",
+
+    'hd1'=>"hda",
+    'hd2'=>"",
+    'UseDu'=>"on",
+    'SensorsTag1'=>"temp1",
+    'SensorsTag2'=>"temp2",
+    'SensorsTagFan'=>"fan1",
+
+    'LimitPppoeDisconnect'=>"1",
+    'LimitPppoeDuration'=>"4",
+    'LimitVpnDuration'=>"2",
+
+    'AlertMailRecipient'=>'admin',
+    'StatusMailRecipient'=>'admin',
+    'StatusInterval'=>"3",
+
+    'MaxMailIn'=>"1",
+    'MaxMailOut'=>"1",
+    'MaxDiskSpace'=>"60",
+    'MaxCpu'=>"50",
+    'MaxHwTemp'=>"40",
+    'MaxHdTemp'=>"40",
+    'MaxSamba'=>"1",
+    'MaxSsh'=>"1",
+    'MaxFtp'=>"1",
+    'MaxVpn'=>"1");
+#----------------------------------------------------------------
+
+#chemins d'acces au repertoires de travail    
+my $logdir="/var/log/";
+my $rrddir="/var/lib/$progname";
+my $tmpdir="/var/tmp/sme9admin-state/";
+unless ( -d $tmpdir ) { mkdir $tmpdir }
+
+my $logfile="$logdir$progname.log";
+my $lockfile="/var/run/$progname.pid";
+
+#tableau des chemins des logs qui nous interessent
+#TO SEE
+my @logs= ( "clamd/current",    # pour les VIRUS ???
+            "spamd/current",    #pour les SPAMS
+            "sshd/current",     #pour les connexions ssh
+            "messages",
+            "qpsmtpd/current",  #pour les mails IN/OUT (RCPT FROM / MAIL TO) et les SPAM/VIRUS ??
+            "sqpsmtpd/current", #idem pour les connexions securisées
+            "proftpd/current",  #pour la date de fin de connection FTP
+            "secure",           #pour les connexion FTP avec le username authentifie
+            "xferlog");         #pour les details des transferts ftp
+
+#handle bd mySQL
+my $bd;
+
+my %mois=("Jan"=>1,"jan"=>1,
+          "Feb"=>2,"fev"=>2,
+          "Mar"=>3,"mar"=>3,
+          "Apr"=>4,"avr"=>4,
+          "May"=>5,"mai"=>5,
+          "Jun"=>6,"jun"=>6,
+          "Jul"=>7,"jul"=>7,
+          "Aug"=>8,"aoû"=>8,
+          "Sep"=>9,"sep"=>9,
+          "Oct"=>10,"oct"=>10,
+          "Nov"=>11,"nov"=>11,
+          "Dec"=>12,"dec"=>12);
+
+#----------------------------------
+# definition des variables pour l'alimentation des rrds
+#sensors.rrd => sensors, hddtemp
+my ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed);
+#hd.rrd => df, du
+my ($hd_total,$hd_used,$hd_free,$hd_log,$hd_files,$hd_squid,$hd_mysql,$hd_blkread,$hd_blkwrite);
+#net.rrd => parse_logs, ping, smbstatus
+my ($net_samba,$net_dhcp,$net_mail_in,$net_mail_out,$net_spam);
+my ($net_virus,$net_minlatency,$net_avglatency,$net_maxlatency,$net_loss);
+#sessions.rrd => netstat
+my ($sessions_ftp,$sessions_ssh,$sessions_vpn,$sessions_netbios,$sessions_afp);
+#if_loc.rrd => sar
+my ($if_loc_bin,$if_loc_bout,$if_loc_pin,$if_loc_pout);
+#if_ext.rrd => sar
+my ($if_ext_bin,$if_ext_bout,$if_ext_pin,$if_ext_pout);
+#cpu.rrd => sar
+my ($cpu_total,$cpu_idle,$cpu_system,$cpu_user,$cpu_nice,$cpu_plist,$cpu_runq,$cpu_load1,$cpu_load5,$cpu_load15,$cpu_uptime);
+#mem.rrd => sar
+my ($mem_memtotal,$mem_memused,$mem_memfree,$mem_memactualused,$mem_memactualfree);
+my ($mem_membuffers,$mem_memcache,$mem_swaptotal,$mem_swapused,$mem_swapfree);
+#httpd.rrd => ps pidof 
+my ($httpd_cpu,$httpd_mem,$httpd_nbproc);
+#samba.rrd => ps pidof
+my ($samba_cpu,$samba_mem,$samba_nbproc);
+#afp.rrd => ps pidof
+my ($afp_cpu,$afp_mem,$afp_nbproc);
+#squid.rrd => ps pidof
+my ($squid_cpu,$squid_mem,$squid_nbproc);
+
+#------------------------
+#declaration de fonctions
+sub debug;
+sub readConf;
+sub connectBD;
+sub deconnectBD;
+sub ip2host;
+sub ipdot2ipnum;
+sub mkmysqldate;
+sub parse_logs;
+sub seek_log;
+sub tell_log;
+sub samba_status;
+sub get_sensors_hddtemp;
+sub get_df_du;
+sub get_ping;
+sub get_netstat;
+sub get_sar;
+sub get_proc;
+sub update_rrd;
+sub mail_alerte;
+sub mail_status;
+sub execute_sql_query;
+
+#-------------
+#Debut du main
+if (-e $lockfile)
+{
+    print "Daemon already running, or crashed...\n";
+    print "PID current : ".$$."\n";
+    my $oldPID=`cat /var/run/sme9admin.pid`;
+    print "PID in PID file : " . $oldPID ."\n";
+    my @listPID=`pgrep sme9admind`;
+    my $test=`/bin/ps -e | /bin/grep $oldPID | /usr/bin/rev | /bin/cut -c1-10 | /usr/bin/rev|tr -d '\n'`;
+    if  ( $test  eq "sme9admind")
+        {
+        print "sme9admind is currently running, with the PID present in its PID file($oldPID).\n";
+        print "Try 'pgrep sme9admin' to see if the daemon crashed, kill it, then exec 'rm -f $lockfile' before restarting daemon.\n";
+        exit 1;
+        }
+    else
+        {
+        print "A PID ($oldPID)and a lock  files were  found, and no sme9admind deamon seemed running.\n";
+        print "Thus we are starting this one ($$).\n";
+        system("kill -9 $oldPID");# we are killing the old one just in case (we have just tested, but we definively do not want two sessions running!)
+        system("touch $lockfile");# updating lock file
+        system("echo $$ > /var/run/sme9admin.pid");
+
+        }
+}
+
+unless (fork)
+{
+    #lock du demon 
+    open FILELOCK,">$lockfile";
+    print FILELOCK $$;
+    close FILELOCK;
+
+    print "Daemonizing $progname... (pid $$)\n";
+
+    #renouvellement du log on conserve 3 versions
+    unlink("$logfile.3") if -e "$logfile.3";
+    rename("$logfile.2","$logfile.2") if -e "$logfile.2";
+    rename("$logfile.1","$logfile.2") if -e "$logfile.1";
+    rename("$logfile.old","$logfile.2") if -e "$logfile.old";
+    rename("$logfile","$logfile.1") if -e "$logfile";
+
+    #redirection des E/S vers le log
+    open STDOUT,">>$logfile";
+    open STDERR,">>$logfile";
+    open STDIN, "</dev/null";
+
+    #trap pour les signaux SIGQUIT & SIGTERM
+    $SIG{QUIT} = sub { print STDERR "At ".localtime().", SIGQUIT Catched\n"; unlink($lockfile); exit 0; };
+    $SIG{TERM} = sub { print STDERR "At ".localtime().", SIGTERM Catched\n"; unlink($lockfile); exit 0; };
+
+    #trap pour le signal SIGUSR1 (lance par logrotate)=>doit faire un parse_log
+    # PS le 10Dec2011 : avec le passagepar seek et tell, encore utile ?
+    $SIG{USR1} = sub { print STDERR "At ".localtime().", SIGUSR1 Catched => parse_logs()\n"; 
+                       parse_logs(); 
+                     };
+
+    #trap pour le signal SIGHUP (lance par le formulaire cgi de modif de la conf)=>doit re_read_conf
+    $SIG{HUP} = sub { print STDERR "At ".localtime().", SIGHUP Catched => readConf()\n"; 
+                      readConf();
+                    };
+    #init de gettext
+    setlocale(LC_MESSAGES,"");
+    bindtextdomain("sme9admin","/usr/share/locale");
+    textdomain("sme9admin");
+    print STDERR "Locale:",setlocale(LC_MESSAGES),"\n";
+    #c'est tout :D
+    
+    readConf();
+    
+    #le service vient de demarrer
+    my $mail = new Mail::Send;
+    $mail->to("$params{'AlertMailRecipient'}");
+    $mail->set("From","sme9admin-daemon");
+    $mail->subject("[SERVICE START] $SystemName : $progname started");
+    my $body = $mail->open;
+    print $body "Uptime: ",`/usr/bin/uptime`;
+    $body->close;
+    
+    my $cnt=0;
+    while(1)
+    {
+        # etape 1 : parsage des logs
+        parse_logs();
+        
+        # etape 2 : interrogation des differents sensors
+        samba_status();
+        get_sensors_hddtemp();
+        get_df_du();
+        get_ping();
+        get_netstat();
+        get_sar();
+        get_proc();
+        
+        # etape 3 : update des rrds avec toutes les nouvelles donnees
+        update_rrd();
+    
+        # etape 4 : envoi des eventuels mails d'alertes
+        mail_alerte();
+        mail_status() if ($params{'StatusInterval'} && !($cnt % $params{'StatusInterval'}));
+        
+        sleep(300-time%300);
+        $cnt++;
+    }
+}
+#Fin du main
+#-----------
+
+#------------------------
+#Definition de fonctions
+#----------------------------------------------------------------
+
+# debug : archi basique !
+sub debug { 
+    if ( $DEBUG ) { print STDERR "@_"; }
+}
+
+#DBI:mysql, connecte MOI
+sub connectBD
+{
+    $bd=DBI->connect ("DBI:mysql:$params{'DbName'}","$params{'DbUser'}","$params{'DbPassword'}");
+    if (!defined ($bd)) {print "MYSQL error $DBI::errstr\n";}
+}
+
+#----------------------------------------------------------------
+#DBI:mysql, deconnecte MOI
+sub deconnectBD
+{
+    $bd->disconnect;
+     if (!defined ($bd)) {print "MYSQL error $DBI::errstr\n";}
+}
+
+#----------------------------------------------------------------
+# lecture de la conf dans la db
+sub readConf
+{
+    #lecture des parametres contenus dans la db de sme
+    my $smedb=esmith::ConfigDB->open; 
+    $DomainName = $smedb->get('DomainName')->value;
+    $SystemName = $smedb->get('SystemName')->value;
+    $SystemMode = $smedb->get("SystemMode")->value;
+    
+    #on n'a une external ip que si on est en server-passerelle
+    if ($SystemMode =~ /servergateway/) {
+        $ExternalIP = $smedb->get("ExternalIP")->value;
+        $ExternalInterface = $smedb->get("ExternalInterface")->prop('Name');
+    }
+    my $InternalIP = $smedb->get("LocalIP")->value;
+    $InternalInterface = $smedb->get("InternalInterface")->prop('Name');
+
+    my $sme9admindb = $smedb->get('sme9admind') || die "Error opening sme9admind db\n";
+
+    foreach my $key (keys(%params)){
+        $params{$key} = $sme9admindb->prop($key) || '';
+    }
+    #lecture de la liste des domaines du serveur, a ajouter a l'option de conf 'OtherMailDomains' => on cree un tableau de domaines/adresses mail
+    @MailDomainsMatch=`/sbin/e-smith/db domains keys`;
+    #on enleve les \n qu'a mis SME
+    chop foreach @MailDomainsMatch;
+    #on splitte les domaines donnes en params et on les rajoute
+    push @MailDomainsMatch, split /;/, $params{'OtherMailDomains'};
+    #on enleve les espaces en debut et en fin
+    $_=~s/\s+//g foreach @MailDomainsMatch;
+    print "MailDomainsMatch =";
+    print " $_" foreach @MailDomainsMatch;
+
+    print "\nreadConf() OK !\n";
+}
+
+################################################ Pique sur perl-gratuit.com
+sub ip2host {
+    my ($ip)=@_;                     # adresse IP en argument
+    # Déclaration des variables utilisées
+    my ($name,$packaddr,@bytes);
+    $ip =~ s/^\s+|\s+$//g;           # on supprime des espaces éventuels en début et fin de l'IP
+    @bytes = split (/\./, $ip);      # on range dans un tableau, les 4 nombres séparés par des points de l'IP
+    $packaddr = pack ("C4", @bytes); # on encode l'adresse IP, en un entier compacté
+    # on lance la résolution de l'adresse IP #
+    if ($name =gethostbyaddr ($packaddr, 2))     {return $name;}
+    else     {return '';}
+}
+
+#conversion d'ip aaa.bbb.ccc.ddd (aaa*16777216)+(bbb*65536)+(ccc*256)+ddd
+sub ipdot2ipnum {
+     return ($_[0]*16777216)+($_[1]*65536)+($_[2]*256)+$_[3];
+}
+
+#conversion d'un date format log en date format mysql
+sub mkmysqldate {
+     #entree de la forme mmm ( d|dd) hh:mm:ss)
+     my($a)=@_;
+     my $annee=(localtime)[5];
+     $annee+=1900;
+     $a =~ /(\w{3})\s{1,2}(\d{1,2}) ([0-9:]{8})/;
+     return ($annee."-".$mois{$1}."-".$2." ".$3);
+}
+
+################################################
+
+# seek_log : ouvre un fichier log, seek a la derniere position connue
+sub seek_log {
+    my ($log) = @_;
+    # au cas ou un vieux fichier existe : migration
+    my $dstnom=$log;
+    $dstnom = substr($dstnom, 9);
+	$dstnom =~ s/\/[0-9a-zA-Z_\-\.]+//;
+    $dstnom = "/var/tmp/$dstnom";
+    if ( -r $dstnom ) {
+        print "the diff log file $dstnom exists, trying to use it as a seek point...\n";
+        my (undef, undef, undef, undef, undef, undef, undef, $seek) = stat( $dstnom );
+        open ( my $fh, "<", $log );
+        seek ( $fh, $seek, 0);
+        print "$log seek at position $seek\n";
+        unlink $dstnom;
+        return $fh;
+    }
+    else {
+        my $state = $log;
+        # on remplace les / par des _-
+        $state =~s/\//_-/g;
+        $state = "$tmpdir/$state";
+        if ( -r $log ) {
+            open ( my $fh, "<", $log);
+            my (undef, $ino, undef,undef,undef,undef,undef, $size) = stat($log);
+            if ( -r $state ) {
+                open (my $fs, "<", $state);
+                my ($fino, $fseek) = <$fs>;
+                chomp $fino; chomp $fseek;
+                close $fs;
+                if ( $fino =~/^\d+$/ and $fseek =~ /^\d+$/ and $fseek <= $size and $fino == $ino ) {
+                    seek ($fh, $fseek, 0);
+                    debug ("$log : seek en position $fseek\n");
+                }
+                else { 
+                    debug ("$log : seek impossible : \$fino='$fino' (Numérique) = a \$ino='$ino' ?\n");
+                    debug ("              \$fseek='$fseek' (Numerique) <= a \$size='$size' ?\n");
+                } 
+            }
+            return $fh;
+        }
+    }
+}
+
+# tell_log : enregistre la position courante 
+sub tell_log {
+    my($log, $fh) = @_;
+    my $state = $log;
+    # on remplace les / par des _-
+    $state =~s/\//_-/g;
+    $state = "$tmpdir$state";
+    my $pos = tell($fh);
+    close $fh;
+    my (undef, $ino) = stat($log);
+    open ( my $fs, ">", $state);
+    print $fs "$ino\n$pos\n";
+    close $fs;
+}
+
+sub parse_logs {
+    connectBD();
+
+    ($net_dhcp,$net_mail_in,$net_mail_out,$net_spam,$net_virus)=(0,0,0,0,0);
+    foreach my $nom (@logs) {
+        # on recupere un file handle positionné comme il faut
+        my $fh = seek_log("$logdir$nom");
+        unless ( defined $fh ) {
+            debug( "impossible d'ouvrir le fichier $nom\n");
+            next;
+        }
+ 
+        #parsage de la difference entre les 2 logs
+        #si la difference a donne qqch
+        #parse SSHD log to catch ssh connections/bruteforce
+        if ($nom eq "sshd/current") {
+            while ( defined(my $l = <$fh>)) {
+                chomp $l;
+                #Match: @TAI64 Accepted password for user from ip port prt mode
+                #   "@4000000043a7f6970980de74 Accepted password for root from 10.246.200.10 port 60693 ssh2"
+                #   "@4000000043a800192a7e131c Accepted publickey for root from 10.246.200.10 port 46322 ssh2"
+                
+                if($l =~ /^(@[0-9a-f]{24}) Accepted (password|publickey) for (\w+) from (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/) {    
+                    #$1:date $2:methode $3:login $4.$5.$6.$7:ip
+                    #open connexion ssh reussie
+                    my $ip=ipdot2ipnum($4,$5,$6,$7);
+                    my $date=tai2strftime($1,"%F %T");
+                    my $reslt=execute_sql_query("SELECT * FROM ssh WHERE ip='$ip' and debut='$date' and login='$3'");
+                    #si on a trouve pas trouve une ligne ==> insert
+                    execute_sql_query("INSERT INTO ssh VALUES ('$date','$ip','$3','1')") if ($reslt eq "0E0");
+                    next;
+                }
+
+                #Match: @TAI64 Failed password for (|invalid user) user from ip port prt mode
+                #matche ces 2 lignes
+                #   "@4000000043a7fe82181805ac Failed password for invalid user plop from 127.0.0.1 port 32793 ssh2"
+                #   "@4000000043a7fe892d74219c Failed password for root from 127.0.0.1 port 32794 ssh2"
+                #on ne matche pas les "Failed publickey" qui precedent generalement un "Accepted password"
+
+                if($l =~ /^(@[0-9a-f]{24}) Failed password for(| invalid user) (\w+) from (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/) {
+                    #$1:date $2:erreur $3:login $4.$5.$6.$7:ip
+                    #open connexion ssh rate
+                    my $ip=ipdot2ipnum($4,$5,$6,$7);
+                    my $date=tai2strftime($1,"%F %T");
+                    my $reslt=execute_sql_query("SELECT * FROM ssh WHERE ip='$ip' and debut='$date' and login='$3'");
+                    execute_sql_query("INSERT INTO ssh VALUES ('$date','$ip','$3','0')") if ($reslt eq "0E0");
+                    next;
+                }
+            }
+        }
+
+        #parse PROFTPD logs to catch ftp connections => proftpd/current, secure & xferlog
+        elsif ($nom eq "secure") {
+            while (defined(my $l = <$fh>))  {
+                chomp $l;
+                #Dec 20 14:45:55 sme7b5 proftpd[27178]: sme7b5.plop.gruiik.org (127.0.0.1[127.0.0.1]) - USER admin: Login successful.
+                #Dec 20 15:18:23 sme7b5 proftpd[26512]: sme7b5.plop.gruiik.org (127.0.0.1[127.0.0.1]) - ANON anonymous: Login successful.
+                if( $l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName proftpd\[(\d+)\]: $SystemName \((\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\[\3\.\4\.\5\.\6\]\) - (ANON|USER) ([0-9a-z-]+): Login successful\./o) {
+                    #login OK
+                    #$1:date $2:pid proftpd $3.$4.$5.$6:ip $7:""mode"" $8:login
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    execute_sql_query("INSERT INTO ftp VALUES('$date',date_add('$date',interval 1 day),null,$ip,'$2','$8','1',0,0)");
+                    next;
+                }
+
+                #Dec  7 20:50:53 sme7b5 proftpd[9952]: sme7b5.plop.gruiik.org (10.246.200.10[10.246.200.10]) - USER test: no such user found from 10.246.200.10 [10.246.200.10] to 10.246.200.13:21
+                #Dec 20 15:15:36 sme7b5 proftpd[23923]: sme7b5.plop.gruiik.org (127.0.0.1[127.0.0.1]) - USER landry (Login failed): Incorrect password.
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName proftpd\[(\d+)\]: $SystemName \((\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\[\3\.\4\.\5\.\6\]\) - USER ([0-9a-zA-Z-]+)(: no such user found from| \(Login failed\): Incorrect password\.)/o) {
+                    #login inexistant ou erreur passwd
+                    #$1:date $2:pid proftpd $3.$4.$5.$6:ip $7:login $8:type erreur
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    execute_sql_query("INSERT INTO ftp VALUES ('$date',null,null,$ip,'$2','$7','0',0,0)");    
+                    next;
+                }
+            }
+        }
+        #ici on matche les fins de connexion ftp (reussies ou non)
+        elsif ($nom eq "proftpd/current") {
+            while ( defined(my $l = <$fh>)) {
+                chomp $l;
+                #@4000000043973d2916bb3c9c tcpsvd: info: end 9952 exit 0
+                if($l =~ /^(@[0-9a-f]{24}) tcpsvd: info: end (\d+)/) {
+                    #$1=date, $2=pid_proftpd
+                    my $date=tai2strftime($1,"%F %T");
+                    execute_sql_query("UPDATE ftp SET fin='$date', duree=fin-debut where pid_proftpd=$2");
+                    next;
+                }
+            }
+        }
+        #enfin on matche les volumes transferes pdt les connections
+        elsif ($nom eq "xferlog") {
+            while ( defined(my $l = <$fh>)) {
+                chomp $l;
+                #Wed Dec  7 20:19:58 2005 0 10.246.200.10 1831631 /home/e-smith/files/ibays/Primary/files/win2.png b _ i r admin ftp 0 * c
+                #Wed Dec  7 20:19:59 2005 0 10.246.200.10 35759 /home/e-smith/files/ibays/Primary/files/wine.png b _ i r admin ftp 0 * c
+                if($l =~ /\w{3} (\w{3}\s{1,2}\d{1,2} [0-9:]{8}) \d{4} \d+ (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) (\d+) [0-9a-zA-Z\.\-\_\/]+ \w \w (\w) (\w) ([A-Z0-9a-z\@_\-]+) ftp/) {
+                    #$1:date $2.$3.$4.$5:ip $6:volume $7:sens $8:loggué/anon ? $9:login
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($2,$3,$4,$5);
+                    my $requete="UPDATE ftp SET ";
+                    #quand c'est un d(deleted) volume=0 donc osef
+                    if ($7 eq 'o') { $requete.="volume_out=volume_out+$6 "; }
+                    else           { $requete.="volume_in=volume_in+$6 "; }
+                    #si l'user est logué
+                    if ($8 eq 'r') { $requete.="where login='$9'"; }
+                    else           { $requete.="where login='anonymous'"; }
+
+                    $requete.=" and connecte='1' and ip=$ip and '$date' >= debut and '$date' <= fin";
+                    execute_sql_query($requete);
+                    next;
+                }
+            }
+        }
+        #parse clamd/current, qpsmtpd/current & clamd/current to count incoming/outgoing mails, and spam & viruses
+        elsif ($nom eq "clamd/current") {
+            while ( defined(my $l = <$fh>)) {
+                chomp $l;
+                #@4000000043a81cd520e929cc /var/spool/qpsmtpd/1135090877:4395:0: Eicar-Test-Signature FOUND
+                if ($l =~ /FOUND/) {$net_virus++;next;}
+            }
+        }
+        elsif ($nom eq "spamd/current") {
+            while ( defined(my $l = <$fh>)) {
+                chomp $l;
+                #@4000000043a1c3ab1ff72c94 2005-12-15 19:27:29 [4838] i: identified spam (997.2/3.0) for qpsmtpd:1005 in 2.2 seconds, 557 bytes.
+                if($l =~ /identified spam/) {$net_spam++;next;}
+            }
+        }
+        elsif ($nom =~ /^s?qpsmtpd\/current$/) {
+            while ( defined(my $l = <$fh>)) {
+                #@4000000043a825c60ff26f84 6556 dispatching RCPT TO:<admin@plop.gruiik.org>
+                #@4000000043a825c60ff26f84 6556 dispatching RCPT TO:<moi@domaine.fr>
+                if ($l =~ /@[0-9a-f]{24} \d+ dispatching RCPT TO:<([a-zA-Z0-9\._\-]+)@([a-zA-Z0-9\._\-]+)>/i) {
+                    my ($user,$domain)=($1,$2);
+                    foreach my $cur_filter (@MailDomainsMatch) {
+                        # si le filtre courant est une adresse mail (contient @)
+                        if ($cur_filter=~/@/) {
+                            #on verifie la correspondance complete
+                            if ($cur_filter =~ /^$user@.?$domain$/) {$net_mail_in++; last;}
+                        } 
+                        else {
+                            #sinon on ne verifie la correspondance que pour le domaine
+                            if ($domain =~/.?$cur_filter/) {$net_mail_in++; last;}
+                        }
+                    }
+                    next;
+                }
+
+                #@4000000043a1c3a908438ffc 7905 dispatching MAIL FROM:<root@plop.gruiik.org>
+                #@4000000043a1c3a908438ffc 7905 dispatching MAIL FROM:<root@mourf.biz>
+                if ($l =~ /@[0-9a-f]{24} \d+ dispatching MAIL FROM:<([a-zA-Z0-9\._\-]+)@([a-zA-Z0-9\._\-]+)>/i) {
+                    my ($user,$domain)=($1,$2);
+                    foreach my $cur_filter (@MailDomainsMatch) {
+                        # si le filtre courant est une adresse mail (contient @)
+                        if ($cur_filter=~/@/) {
+                            #on verifie la correspondance complete
+                            if ($cur_filter =~ /^$user@.?$domain$/) {$net_mail_out++; last;}
+                        }
+                        else {
+                            #sinon on ne verifie la correspondance que pour le domaine
+                            if ($domain =~/.?$cur_filter/) {$net_mail_out++; last;}
+                        }
+                    }
+                    next;
+                }
+            }
+        }
+        elsif ($nom eq "messages") { 
+            while ( defined(my $l = <$fh>)) {
+                #Baux DHCP
+                #/var/log/messages:Nov 28 19:34:14 sme7b5 dhcpd: DHCPACK on 192.168.1.250 to 00:e0:4c:39:03:a5 via eth0
+                #Match: mmm dd hh:mm:ss hostname dhcpd: DHCPACK on ip    to mac via eth0
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName dhcpd: DHCPACK on (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) to ([0-9a-f:]{17}) via/o) {
+                    #$1:mois jour heure $2.$3.$4.$5:ip $6:mac
+                    my $ip=ipdot2ipnum($2,$3,$4,$5);
+                    my $hostname=ip2host("$2.$3.$4.$5");
+                    my $date=mkmysqldate($1);
+                    my $reslt=execute_sql_query("SELECT * FROM dhcpd WHERE ip='$ip'");
+                    #si on a trouve une ligne ==> update
+                    if ($reslt != "0E0") {
+                        execute_sql_query("UPDATE dhcpd SET mac='$6', hostname='$hostname', debut='$date' WHERE ip='$ip'");
+                    }
+                    #sinon nouvelle ip ==> insert
+                    else {
+                        execute_sql_query("INSERT INTO dhcpd VALUES ('$ip','$6','$hostname','$date')");
+                    }
+                    $net_dhcp++;
+                    next;
+                }
+
+                #Connexion afp (beta test ??) 1-ouverture session (548==>port afpovertcp)
+                #Jul 13 11:50:02 sas afpd[30668]: ASIP session:548(2) from 192.168.150.12:49278(0)    
+                #Match: mmm dd hh:mm:ss hostname afpd[pid]: ASIP session:548(xxxx)?? from ip:port(xx?)
+                # non change par rapport a sme6admin
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName afpd\[(\d+)\]: ASIP session:\d+\(\d+\) from (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):\d+/o) {
+                    #$1:mois jour heure $2:pid $3.$4.$5.$6:ip
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    execute_sql_query("INSERT INTO afp VALUES ('$ip','$date',null,'$2',null,null,null)");
+                    next;
+                }
+                #2-login user
+                #Jul  7 10:46:41 sas afpd[20523]: login sandrine (uid 5000,gid 5000) AFP2.2
+                #Match: date hostname afpd[pid]: login user
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName afpd\[(\d+)\]: login (\w+) \(uid \d+/o) {
+                    #$1: date $2:pid $3:login
+                    my $debut=mkmysqldate($1);
+                    #pourquoi cette bidouille sur la date ??
+                    #pour retrouver la bonne cnx=>pid et la date du open session 
+                    #il doit avoir eu lieu au plus 10sec avant le login
+                    execute_sql_query("UPDATE afp SET login='$3' where pid_afpd=$2 and debut > '$debut' - interval 10 second");
+                    next;
+                }
+
+                #3-logout && data transferred
+                #pourquoi faire les 2 en mm temps ?? cause des fois logout ou timeout ...
+                #Jul  7 17:04:08 sas afpd[20523]: 95.88KB read, 3014.84KB written
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName afpd\[(\d+)\]: ([0-9\.]+)KB read, ([0-9\.]+)KB written/o) {
+                    #$1: date $2:pid $3:data read $4: data written
+                    my $fin=mkmysqldate($1);
+                    execute_sql_query("UPDATE afp SET fin='$fin', volume_read=$3, volume_write=$4  where pid_afpd=$2");
+                    next;
+                }
+
+                #Matche des connexions PPPOE
+                #Changement entre sme6 et sme7 : apparemment, on a l'ip locale avant celle du peer dans les logs => inversion du INSERT et du UPDATE
+                        # in fact if we use the IPCP string remote is there first in SME7, should be the same in SME8
+                        #Jun  9 17:26:29 atlas pppd[5642]: rcvd [IPCP ConfReq id=0xf <addr 10.218.0.7>]
+                        #Jun  9 17:26:29 atlas pppd[5642]: sent [IPCP ConfAck id=0xf <addr 10.218.0.7>]
+                        #Jun  9 17:26:29 atlas pppd[5642]: rcvd [IPCP ConfNak id=0x1 <addr 209.0.239.34>]
+                        #Jun  9 17:26:29 atlas pppd[5642]: sent [IPCP ConfReq id=0x2 <addr 209.0.239.34>]
+                        #Jun  9 17:26:29 atlas pppd[5642]: rcvd [IPCP ConfAck id=0x2 <addr 209.0.239.34>]
+                        #Jun  9 17:26:29 atlas pppd[5642]: local  IP address 209.222.239.34
+                        #Jun  9 17:26:29 atlas pppd[5642]: remote IP address 10.248.0.7
+                        #Jun  9 17:26:29 atlas pppd[5642]: Script /etc/ppp/ip-up started (pid 5886)
+                        #Jun  9 17:26:32 atlas esmith::event[5907]: Processing event: ip-up ppp0  38400 209.0.239.34 10.218.0.7 pppoe
+
+                 #PPPOE ip local
+                 #Jul 14 12:49:58 sas pppd[1878]: rcvd [IPCP ConfAck id=0x2 <addr 213.41.134.153>]
+                 #Match: date hostname pppd[pid]: rcvd [IPCP ConfAck id=0xxx? <addr ip>]
+                 #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: rcvd \[IPCP ConfAck id=0x\w+ <addr (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})>\]/o)
+                 if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: local  IP address (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                    #$1: date $2:pid $3.$4.$5.$6:ip
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+	            execute_sql_query("INSERT INTO pppoe VALUES ('$date',null,null,'$2','$ip',0,null,null)");# (peer can't be null)
+                    next;
+                  }
+
+                  #PPPOE ip peer
+                  #Jul 14 12:49:58 sas pppd[1878]: sent [IPCP ConfAck id=0x1 <addr 62.4.16.234>]
+                  #Match: date hostname pppd[pid]: sent [IPCP ConfAck id=0xxx? <addr ip>]
+                  #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: sent \[IPCP ConfAck id=0x\w+ <addr (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})>\]/o)
+                  if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: remote IP address (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                     #$1: date $2:pid $3.$4.$5.$6:ip
+                     my $date=mkmysqldate($1);
+                     my $ip=ipdot2ipnum($3,$4,$5,$6);
+                     execute_sql_query("UPDATE pppoe SET peer='$ip' where pid_pppd=$2 and debut > '$date' - interval 5 second");
+                     next;
+                  }
+
+                #VPN ip vpn_srv & pid_pptpd
+                #Jun 25 15:43:31 test pptpd[636]: CTRL: local address = 192.168.2.1
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: local address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                    #$1: date $2:pid $3.$4.$5.$6:ip
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    execute_sql_query("INSERT INTO vpn VALUES ('$date',null,null,null,null,$ip,null,null,null,$2,null)");
+                    next;
+                }
+
+                #VPN ip vpn_clt
+                #Jun 25 15:43:31 test pptpd[636]: CTRL: remote address =    192.168.2.250
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: remote address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                    #$1: date $2:pid $3.$4.$5.$6:ip
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    execute_sql_query("UPDATE vpn SET vpn_clt=$ip where pid_pptpd=$2 and debut > '$date' - interval 5 second");
+                    next;
+                }
+                #VPN ip client
+                #Jun 25 15:43:31 test pptpd[636]: CTRL: Client 192.168.185.66 control connection started
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: Client (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) control connection started/o) {
+                    #$1: date $2:pid $3.$4.$5.$6:ip
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    execute_sql_query("UPDATE vpn SET ip=$ip where pid_pptpd=$2 and debut > '$date' - interval 5 second");
+                    next;
+                }
+
+                #VPN checkip pid_pppd
+                #Jun 25 15:43:33 test pptpd[637]: CTRL (PPPD Launcher): local address = 192.168.2.1
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL \(PPPD Launcher\): local address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                    #$1: date $2:pid !!! PPPD !!!    $3.$4.$5.$6:ip
+                    my $date=mkmysqldate($1);
+                    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    execute_sql_query("UPDATE vpn SET pid_pppd=$2 where vpn_srv=$ip and debut > '$date' - interval 5 second");
+                    next;
+                }
+
+                #Deprecated !!! Dans sme7, l'auth se fait via Radius, qui ne loggue rien par défaut => pas moyen de connaitre simplement le login
+                #VPN login
+                #Jun 25 15:43:36 test pppd[637]: CHAP peer authentication succeeded for rv                                
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: CHAP peer authentication succeeded for ([0-9a-z-]+)/o) {
+                    #$1: date $2:pid $3:login
+                    my $date=mkmysqldate($1);
+                    execute_sql_query("UPDATE vpn SET login='$3' where pid_pppd=$2 and debut > '$date' - interval 20 second");
+                    next;
+                }
+
+                #PPPOE && VPN !!! temps de connexion 
+                #Jul 15 12:49:58 sas pppd[1878]: Connect time 1440.0 minutes.
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: Connect time ([0-9\.]+) minutes\./o) {
+                    #$1:date $2:pid $3:duree
+                    my $date=mkmysqldate($1);
+                    #faut faire un update, mais soit dans pppoe, soit dans vpn
+                    my $reslt=execute_sql_query("SELECT * FROM pppoe WHERE pid_pppd='$2'");
+                    my $requete="UPDATE ";
+                    #si on a trouve une ligne ==> update dans pppoe
+                    if ($reslt != "0E0")    { $requete.="pppoe ";}
+                    #sinon c une fin de cnx vpn
+                    else                    { $requete.="vpn ";}
+                    $requete.="SET duree=sec_to_time($3*60), fin='$date' where pid_pppd=$2";
+                    execute_sql_query($requete);
+                    next;
+                }
+
+                #volume transfere
+                #PPPOE && VPN !!! volume transfere
+                #Jul 15 12:49:58 sas pppd[1878]: Sent 3786298 bytes, received 26799337 bytes.
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: Sent (\d+) bytes, received (\d+) bytes\./o) {
+                    #$1:date $2:pid $3:out $4:in
+                    my $date=mkmysqldate($1);
+                    #faut faire un update, mais soit dans pppoe, soit dans vpn
+                    my $reslt=execute_sql_query("SELECT * FROM pppoe WHERE pid_pppd='$2'");
+                    my $requete="UPDATE ";
+                    #si on a trouve une ligne ==> update dans pppoe
+                    if ($reslt != "0E0")    { $requete.="pppoe ";}
+                    #sinon c une fin de cnx vpn
+                    else                    { $requete.="vpn ";}
+                    $requete.="SET volume_out=$3, volume_in=$4 where pid_pppd=$2 and fin > '$date' - interval 5 second";
+                    execute_sql_query($requete);
+                    next;
+                }
+            }
+        }
+        # libération du fichier de log courant, enregistrement de la position
+        tell_log("$logdir$nom", $fh);
+    }
+    deconnectBD();
+}
+
+#rewritten
+sub execute_sql_query {
+    my ($requete)=(@_);
+    my $rq=$bd->prepare("$requete");
+    my $rslt=$rq->execute(); 
+    print "RQT MySQL : $requete , Reslt : $rslt/$!\n";
+    return $rslt;
+}
+
+sub samba_status {
+    #connexions samba => gros changement depuis sme6 , les devs de samba ont eu la bonne idee de mettre la date de connexion dans une autre option (GRR) 
+    #[root@sme7b5 codaz]# smbstatus -b
+    #5227   landry        landry        renton       (10.246.200.10)
+    #5221   landry        landry        renton       (10.246.200.10)
+    #[root@sme7b5 codaz]# smbstatus -S
+    #Primary       5227   renton        Fri Dec 23 16:05:09 2005
+    #Primary       5221   renton        Fri Dec 23 16:04:46 2005
+
+    connectBD();
+    $net_samba=0; 
+    my $now=localtime;
+    $now=~ /\w{3} (\w{3}\s{1,2}\d{1,2} [0-9:]{8}) \d{4}/;
+    $now=mkmysqldate($1);
+
+    my @smbstatus1=`/usr/bin/smbstatus -b`;
+    my @smbstatus2=`/usr/bin/smbstatus -S`;
+    foreach(@smbstatus1) {
+        if(/(\d+)\s+([0-9a-z-]+)\s+[0-9a-z-]+\s+([0-9a-zA-Z-_]+)\s+\((\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\)/) {
+            #$1:pid $2:login $3:machine $4,$5,$6,$7:ip
+            $net_samba++;
+            my $ip=ipdot2ipnum($4,$5,$6,$7);
+            my ($pid,$login,$machine)=($1,$2,$3);
+
+            #on cherche la date de debut de connexion en faisant la correspondance avec le pid
+            foreach (@smbstatus2) {
+                if(/\w+\s+(\d+)\s+\w+\s+\w{3} (\w{3}\s{1,2}\d{1,2} [0-9:]{8}) \d{4}/) {
+                    #$1:pid $2:date
+                    my $date=mkmysqldate($2);
+                    if ($pid eq $1) {
+                        my $reslt=execute_sql_query("SELECT * FROM samba WHERE ip=$ip and login='$login' and machine='$machine'");
+                        #si on a trouve une ligne ==> update
+                        if ($reslt != "0E0") {execute_sql_query("UPDATE samba SET debut='$date',derniere_vue='$now' WHERE ip='$ip' and login='$login' and machine='$machine'");}
+                        #sinon nouvelle ligne ==> insert
+                        else {execute_sql_query("INSERT INTO samba VALUES ($ip,'$login','$machine','$date','$date')");}
+                    }
+                }
+            }
+        }
+    }
+    deconnectBD();
+}
+#fin de la collection des infos destinees a rentrer dans la BDD MySQL
+#debut de la collection des infos pour RRDTool => graphes
+
+# reecrit pour mieux supporter differents types de tags et de senseurs 
+# tagS = hda, hdc, temp1, temp2, fan2, CPU Temp, CPU Fan, etc...... => executer sensors en ligne de commande pour trouver le bon
+sub get_sensors_hddtemp {
+    # $sensors_temp_cpu,$sensors_temp_hd,$sensors_temp_mb,$sensors_fan_speed
+    #fan2:     3970 RPM  (min = 3000 RPM, div = 2)
+    #temp1:       +30°C  (limit =  +60°C)                       sensor = thermistor
+    #temp2:     +46.0°C  (limit =  +60°C, hysteresis =  +50°C) sensor = 3904 transistor
+
+    ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed)=('U','U','U','U','U');
+
+    my ($tag1,$tag2,$tag3,$tag4,$tag5)=($params{'SensorsTag1'},$params{'SensorsTag2'},$params{'SensorsTagFan'},
+        $params{'hd1'},$params{'hd2'}); 
+
+    #a noter que si hddtemp & lm_sensors n'ont pas ete installés,ca ne plante pas !!
+    my @sensors=`/usr/bin/sensors -A 2> /dev/null`;
+    foreach (@sensors) {
+        if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp1=$2;}
+        if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp2=$2;}
+        if ($tag3 ne "" && (/$tag3:\s+(\d+) RPM/o)) {$sensors_fan_speed=$1;}
+    }
+
+    if ($tag4 ne "") {
+        my @hddtemp=`/usr/sbin/hddtemp /dev/$tag4 2> /dev/null`;
+        foreach (@hddtemp) {
+            #/dev/hda: ExcelStor Technology J680 :  39°C ou °F
+            if (/\/dev\/$tag4:.*:\s+(\d+)°C/o) {$sensors_temp_hd1=$1;}
+        }
+    }
+    if ($tag5 ne "") {
+        my @hddtemp=`/usr/sbin/hddtemp /dev/$tag5 2> /dev/null`;
+        foreach (@hddtemp) {
+            if (/\/dev\/$tag5:.*:\s+(\d+)°C/) {$sensors_temp_hd2=$1;}
+        }
+    }
+}
+
+sub get_df_du {
+
+    ($hd_total,$hd_used,$hd_free,$hd_log,$hd_files,$hd_squid,$hd_mysql)=(0,0,0,'U','U','U','U');
+    # total : taille totale du disque en ko
+    # used : place utilisee
+    # free : place libre
+    # log : place prise par /var/log/
+    # files : place prise par /home/e-smith/files/
+    # squid : place prise par /var/spool/squid/
+    # mysql : place prise par /var/lib/mysql/
+
+    my @df=`/bin/df --block-size=1 --local`;
+    foreach (@df) {
+         
+         #Filesystem            1-blocks      Used Available Use% Mounted on
+         #/dev/hda3            2812182528 1438830592 1230499840  54% /
+         #/dev/hda1             99911680  14383104  80369664  16% /boot
+         #OLD expreg if(/dev\/\S+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\%/) => Cyril's fix
+         # si on veut ajouter une partition montee ailleurs que / /home ou /boot, patcher l'expreg ici
+         if(/\s+\d+\s+(\d+)\s+(\d+)\s+\d+\%\s+\/(home.*|boot)?\s+?$/) {
+              $hd_used+=$1;
+              $hd_free+=$2;
+         }
+    }
+    $hd_total=$hd_used+$hd_free;
+
+    if ($params{'UseDu'} eq "on") {
+        my @du=`/usr/bin/du -sb /var/log /var/spool/squid /var/lib/mysql /home/e-smith/files`;
+        foreach (@du) {
+            #149442560       /var/log
+            if(/(\d+)\s+\/var\/log/) {$hd_log=$1;}
+            if(/(\d+)\s+\/home\/e-smith\/files/) {$hd_files=$1;}
+            if(/(\d+)\s+\/var\/spool\/squid/) {$hd_squid=$1;}
+            if(/(\d+)\s+\/var\/lib\/mysql/) {$hd_mysql=$1;}
+        }
+    }
+}
+
+sub get_ping {
+    ($net_minlatency,$net_avglatency,$net_maxlatency,$net_loss)=('U','U','U','U');
+    
+    #si PingTarget est nul, on prend la gateway par defaut
+    my $target=$params{'PingTarget'};
+    if ($target eq "") {
+        #on determine la gateway par defaut
+        my @route=`route -n`;
+        foreach (@route) {
+             #0.0.0.062.4.16.247     0.0.0.0         UG    0      0        0 ppp0
+             if(/0\.0\.0\.0\s+(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/){$target="$1.$2.$3.$4";}
+        }
+    }
+
+    my @ping=`/bin/ping -c 20 -i 0.25 -qnw 7  $target  2> /dev/null`;    
+    foreach (@ping) {
+        #[root@sme7b5 codaz]# /bin/ping -c 20 -i 0.25 -qnw 7 google.fr
+        #20 packets transmitted, 20 received, 0% packet loss, time 4768ms
+        #rtt min/avg/max/mdev = 147.019/160.127/171.536/7.289 ms, pipe 2
+        if (/(\d+)% packet loss/) {$net_loss=$1;}
+        if (/(\d+\.\d+)\/(\d+\.\d+)\/(\d+\.\d+)\/\d+\.\d+ ms/) { $net_minlatency=$1/1000; $net_avglatency=$2/1000; $net_maxlatency=$3/1000;}
+    }
+}
+
+sub get_netstat {
+    ($sessions_ftp,$sessions_ssh,$sessions_vpn,$sessions_netbios,$sessions_afp)=(0,0,0,0,0);
+    # plus simple, plus rapide avec tcp/numeric 
+    # par contre, a surveiller le passage de samba du port 139 a 445 
+    my @netstat=`/bin/netstat --inet --tcp --numeric`;
+    foreach (@netstat) {
+        if (/tcp\s+\d+\s+\d+\s\S+:22\s+\S+\s+ESTABLISHED/){$sessions_ssh++;}
+        if (/tcp\s+\d+\s+\d+\s\S+:21\s+\S+\s+ESTABLISHED/){$sessions_ftp++;}
+        if (/tcp\s+\d+\s+\d+\s\S+:1723\s+\S+\s+ESTABLISHED/){$sessions_vpn++;}
+        if (/tcp\s+\d+\s+\d+\s\S+:548\s+\S+\s+ESTABLISHED/){$sessions_afp++;}
+        if (/tcp\s+\d+\s+\d+\s\S+:445\s+\S+\s+ESTABLISHED/){$sessions_netbios++;}
+    }
+    #une cnx ssh
+    #tcp        0      0 10.246.200.13:22            10.246.200.10:37304         ESTABLISHED
+    #une cnx ftp
+    #tcp        0      0 10.246.200.13:21            10.246.200.10:47412         ESTABLISHED
+    #une cnx vpn
+    #tcp        0      0 192.168.185.74:1723         10.246.200.10:2176          ESTABLISHED
+    #une cnx netbios
+    #tcp        0      0 10.246.200.13:445           10.246.200.10:42368         ESTABLISHED
+}
+
+#ici on utilise sysstat pour recuperer un maxx de stats sur le fonctionnement du systeme
+sub get_sar {
+    ($if_loc_bin,$if_loc_bout,$if_loc_pin,$if_loc_pout)=('U','U','U','U');
+    ($if_ext_bin,$if_ext_bout,$if_ext_pin,$if_ext_pout)=('U','U','U','U');
+    ($cpu_total,$cpu_idle,$cpu_system,$cpu_user)=('U','U','U','U');
+    ($hd_blkread,$hd_blkwrite)=('U','U');
+    ($cpu_nice,$cpu_plist,$cpu_runq,$cpu_load1,$cpu_load5,$cpu_load15,$cpu_uptime)=('U','U','U','U','U','U','U');
+    ($mem_memtotal,$mem_memused,$mem_memfree,$mem_memactualused,$mem_memactualfree)=('U','U','U','U','U');
+    ($mem_membuffers,$mem_memcache,$mem_swaptotal,$mem_swapused,$mem_swapfree)=('U','U','U','U','U');
+
+    rename("$rrddir/sadc.bck","$rrddir/sadc.out");
+    if ( -x '/usr/lib/sa/sadc' ) {
+    `/usr/lib/sa/sadc 1 1 $rrddir/sadc.out; /usr/lib/sa/sadc 1 1 $rrddir/sadc.bck`;}
+    else
+    {`/usr/lib64/sa/sadc 1 1 $rrddir/sadc.out; /usr/lib64/sa/sadc 1 1 $rrddir/sadc.bck`;}
+    # small change to support sysstat > 5.1
+    my @sardata;
+    if ( -x '/usr/bin/sadf' ) { @sardata=`/usr/bin/sadf -- -qrbu -n DEV $rrddir/sadc.out`; }
+    else { @sardata=`/usr/bin/sar -hqrbu -n DEV -f $rrddir/sadc.out`; }
+    unlink("$rrddir/sadc.out");
+
+    foreach (@sardata) {
+        #print "Ligne courante matchee : $_";
+        #format de sortie de sar -h
+        #hostname interval timestamp device/- field value
+        #test   233     1090416323        eth0  rxpck/s 4,84 Locale FR
+        #test   233     1090416323        eth0  rxpck/s 4.84 Locale US
+
+        #cpu usage %
+        if(/all\s\%user\s(\d+)(,|\.)(\d+)/){$cpu_user="$1.$3";}
+        if(/all\s\%nice\s(\d+)(,|\.)(\d+)/){$cpu_nice="$1.$3";}
+        if(/all\s\%system\s(\d+)(,|\.)(\d+)/){$cpu_system="$1.$3";}
+        if(/all\s\%idle\s(\d+)(,|\.)(\d+)/){$cpu_idle="$1.$3"; $cpu_total=100-$cpu_idle;}
+
+        #bytes r/w 
+        if(/bread\/s\s(\d+)(,|\.)(\d+)/){$hd_blkread="$1.$3";}
+        if(/bwrtn\/s\s(\d+)(,|\.)(\d+)/){$hd_blkwrite="$1.$3";}
+
+        #local net
+        if(/$InternalInterface\srxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_pin="$1.$3";}
+        if(/$InternalInterface\stxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_pout="$1.$3";}
+        if(/$InternalInterface\srxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_bin="$1.$3";}
+        if(/$InternalInterface\stxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_bout="$1.$3";}
+
+        #external net (if not SrvOnly)
+        if (defined $ExternalInterface) {
+            if(/$ExternalInterface\srxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_pin="$1.$3";}
+            if(/$ExternalInterface\stxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_pout="$1.$3";}
+            if(/$ExternalInterface\srxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_bin="$1.$3";}
+            if(/$ExternalInterface\stxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_bout="$1.$3";}
+        }
+
+        #memory
+        if(/kbmemfree\s(\d+)/) {$mem_memactualfree=$1*1024;}
+        if(/kbmemused\s(\d+)/) {$mem_memactualused=$1*1024;}
+        if(/kbbuffers\s(\d+)/) {$mem_membuffers=$1*1024;}
+        if(/kbcached\s(\d+)/) {$mem_memcache=$1*1024;}
+        if(/kbswpfree\s(\d+)/) {$mem_swapfree=$1*1024;}
+        if(/kbswpused\s(\d+)/) {$mem_swapused=$1*1024;}
+
+        #processus
+        if(/runq-sz\s(\d+)/) {$cpu_runq=$1;}
+        if(/plist-sz\s(\d+)/) {$cpu_plist=$1;}
+        if(/ldavg-1\s(\d+)(,|\.)(\d+)/) {$cpu_load1="$1.$3";}
+        if(/ldavg-5\s(\d+)(,|\.)(\d+)/) {$cpu_load5="$1.$3";}
+        if(/ldavg-15\s(\d+)(,|\.)(\d+)/) {$cpu_load15="$1.$3";}
+    }
+
+    $mem_memtotal = $mem_memactualused + $mem_memactualfree;
+    $mem_memused = $mem_memactualused - $mem_memcache - $mem_membuffers;
+    $mem_memfree = $mem_memactualfree + $mem_memcache + $mem_membuffers;
+    $mem_swaptotal = $mem_swapused + $mem_swapfree;
+
+    #uptime
+    my $uptime=`/bin/cat /proc/uptime`;
+    $uptime=~/^([0-9\.]+)/;
+    $cpu_uptime=$1;
+
+}
+
+# cette fonction calcule l'occupation cpu/mem des processus correspondants aux services http/samba/afp/squid
+sub get_proc {
+    my %services=( "httpd" => "httpd-admin httpd-e-smith",
+                   "samba" => "nmbd smbd",
+                   "afp"   => "atalkd afpd papd cnid_metad", #ajout de cnid_metad
+                   "squid" => "squid \\(unlinkd\\)"); #suppression de (squid)
+
+    no strict 'refs';
+    foreach my $svc (keys(%services)) {
+        ${$svc.'_nbproc'}='U';
+        ${$svc.'_mem'}='U';
+        ${$svc.'_cpu'}='U';
+
+        my $pids=`/sbin/pidof $services{$svc}`;
+        #on fait le ps que si le service tourne ==> qui si pidof a renvoye qqch
+        if ($pids ne "\n") {
+            ${$svc.'_nbproc'}=0;
+            ${$svc.'_mem'}=0;
+            ${$svc.'_cpu'}=0;
+
+            my @lines=`/bin/ps h o \%cpu,\%mem p $pids`;
+
+            foreach(@lines) {
+                my $line=$_;
+                $line =~ /\s([\d.]+)\s+([\d.]+)/;
+                ${$svc.'_nbproc'}++;
+                ${$svc.'_cpu'}+=$1;
+                ${$svc.'_mem'}+=$2;
+            }
+        }
+    }
+    $httpd_cpu=${'httpd_cpu'}; $httpd_mem=${'httpd_mem'}; $httpd_nbproc=${'httpd_nbproc'};
+    $samba_cpu=${'samba_cpu'}; $samba_mem=${'samba_mem'}; $samba_nbproc=${'samba_nbproc'};
+    $afp_cpu=${'afp_cpu'}; $afp_mem=${'afp_mem'}; $afp_nbproc=${'afp_nbproc'};
+    $squid_cpu=${'squid_cpu'}; $squid_mem=${'squid_mem'}; $squid_nbproc=${'squid_nbproc'};
+    use strict qw(refs);
+
+}
+
+# cette fonction met a jour les RRDs. Elle a ete "factorisee" pour plus de lisibilite
+sub update_rrd {
+#DEBUG !! 
+#    print "sensors_temp1=$sensors_temp1,sensors_temp_hd1=$sensors_temp_hd1,sensors_temp_hd2=$sensors_temp_hd2,";
+#    print "sensors_temp2=$sensors_temp2,sensors_fan_speed=$sensors_fan_speed\n";
+#    print "hd_total=$hd_total,hd_used=$hd_used,hd_free=$hd_free,hd_log=$hd_log,";
+#    print "hd_files=$hd_files,hd_squid=$hd_squid,hd_mysql=$hd_mysql,hd_blkread=$hd_blkread,hd_blkwrite=$hd_blkwrite\n";
+#    print "if_loc_bin=$if_loc_bin,if_loc_bout=$if_loc_bout,if_loc_pin=$if_loc_pin,if_loc_pout=$if_loc_pout\n";
+#    print "if_ext_bin=$if_ext_bin,if_ext_bout=$if_ext_bout,if_ext_pin=$if_ext_pin,if_ext_pout=$if_ext_pout\n";
+#    print "net_samba=$net_samba,net_minlatency=$net_minlatency,net_avglatency=$net_avglatency,";
+#    print "net_maxlatency=$net_maxlatency,net_loss=$net_loss,net_spam=$net_spam,net_virus=$net_virus,";
+#    print "net_dhcp=$net_dhcp,net_mail_in=$net_mail_in,net_mail_out=$net_mail_out\n";
+#    print "cpu_total=$cpu_total,cpu_idle=$cpu_idle,cpu_system=$cpu_system,cpu_user=$cpu_user\n";
+#    print "cpu_nice=$cpu_nice,cpu_plist=$cpu_plist,cpu_runq=$cpu_runq";
+#    print "cpu_load1=$cpu_load1,cpu_load5=$cpu_load5,cpu_load15=$cpu_load15,cpu_uptime=$cpu_uptime\n";
+#    print "mem_memtotal=$mem_memtotal,mem_memused=$mem_memused,mem_memfree=$mem_memfree";
+#    print "mem_memactualused=$mem_memactualused,mem_memactualfree=$mem_memactualfree\n";
+#    print "mem_membuffers=$mem_membuffers,mem_memcache=$mem_memcache";
+#    print "mem_swaptotal=$mem_swaptotal,mem_swapused=$mem_swapused,mem_swapfree=$mem_swapfree\n";
+#    print "httpd cpu=$httpd_cpu, mem=$httpd_mem, nb=$httpd_nbproc\n";
+#    print "samba cpu=$samba_cpu, mem=$samba_mem, nb=$samba_nbproc\n";
+#    print "afp cpu=$afp_cpu, mem=$afp_mem, nb=$afp_nbproc\n";
+#    print "squid cpu=$squid_cpu, mem=$squid_mem, nb=$squid_nbproc\n";
+#    print "sessions_ftp=$sessions_ftp,sessions_ssh=$sessions_ssh,";
+#    print "sessions_vpn=$sessions_vpn,sessions_netbios=$sessions_netbios\n";
+
+    my %rrds=(
+        "sensors"=>"$sensors_temp1:$sensors_temp2:$sensors_temp_hd1:$sensors_temp_hd2:$sensors_fan_speed",
+        "hd"=>"$hd_total:$hd_used:$hd_free:$hd_log:$hd_files:$hd_squid:$hd_mysql:$hd_blkread:$hd_blkwrite",
+        "if_loc"=>"$if_loc_bin:$if_loc_bout:$if_loc_pin:$if_loc_pout",
+        "if_ext"=>"$if_ext_bin:$if_ext_bout:$if_ext_pin:$if_ext_pout",
+        "net"=>"$net_samba:$net_dhcp:$net_mail_in:$net_mail_out:$net_spam:$net_virus:$net_minlatency:$net_avglatency:$net_maxlatency:$net_loss",
+        "cpu"=>"$cpu_total:$cpu_idle:$cpu_system:$cpu_user:$cpu_nice:$cpu_plist:$cpu_runq:$cpu_load1:$cpu_load5:$cpu_load15:$cpu_uptime",
+        "mem"=>"$mem_memtotal:$mem_memused:$mem_memfree:$mem_memactualused:$mem_memactualfree:$mem_membuffers:$mem_memcache:$mem_swaptotal:$mem_swapused:$mem_swapfree",
+        "httpd"=>"$httpd_cpu:$httpd_mem:$httpd_nbproc",
+        "samba"=>"$samba_cpu:$samba_mem:$samba_nbproc",
+        "afp"=>"$afp_cpu:$afp_mem:$afp_nbproc",
+        "squid"=>"$squid_cpu:$squid_mem:$squid_nbproc",
+        "sessions"=>"$sessions_ssh:$sessions_ftp:$sessions_vpn:$sessions_netbios:$sessions_afp");
+    my $error;
+    
+    foreach my $rrd (keys %rrds) {
+        RRDs::update ("$rrddir/$rrd.rrd","N:$rrds{$rrd}");
+        $error=RRDs::error;
+        print gettext("Error at RRDs::update"),"($rrd.rrd) :$error\n" if $error;
+    }
+}
+
+#envoi des differents mails
+#mail de status avec les infos les plus pertinentes sur l'etat du serveur
+sub mail_status {
+    my $mail = new Mail::Send;
+    $mail->to("$params{'StatusMailRecipient'}");
+    $mail->set("From","sme9admin-daemon");
+    $mail->subject("[STATUS] $SystemName.$DomainName");
+    my $body = $mail->open;
+    print $body localtime(time)."\n",
+        gettext("Server status\n"),
+        gettext("Number of opened connections : "),"ssh=$sessions_ssh ftp=$sessions_ftp vpn=$sessions_vpn netbios=$sessions_netbios\n",
+        "\n#>tail /var/log/messages :\n",
+        `/usr/bin/tail /var/log/messages`,
+        "\n#>netstat --numeric-hosts -tpu :\n", #ajoute dans sme9admin
+        `/bin/netstat --numeric-hosts -tpu`,
+        "\n#>service httpd-e-smith status\n",
+        `/sbin/service httpd-e-smith status`,
+        "\n#>service httpd-admin status\n",
+        `/sbin/service httpd-admin status`,
+        "\n#>service smb status\n",
+        `/sbin/service smb status`,
+        "\n#>service sshd status\n",
+        `/sbin/service sshd status`;
+    $body->close;
+}
+
+#envoie des mails d'alerte
+sub mail_alerte {
+    my $pourc_hd_used = int(($hd_used/$hd_total)*100);
+    #ici, on utilise un tableau d'alertes. (Je trouve ca plus elegant et plus extensible). Pour chacune, on a 
+    # - un test qui déclenche ou non l'alerte
+    # - le sujet du mail a envoyer
+    # - une fonction inline qui renvoie le texte du mail
+    my @tab_of_alerts=(
+        [
+            "($params{'MaxMailIn'} && $net_mail_in >= $params{'MaxMailIn'})",
+            "[ALRT] $SystemName.$DomainName : mail in = $net_mail_in (max=$params{'MaxMailIn'})",
+            sub { return
+                sprintf(gettext("During the last 5 minutes, %s incoming e-mails were detected, "),$net_mail_in),
+                sprintf(gettext("you had set the alert limit to %s incoming e-mails.\n"),$params{'MaxMailIn'}),
+                gettext("(Possible reasons : do you receive spam ? a mailbomb ? mailing-lists ?)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxMailIn";
+        }],
+        [
+            "($params{'MaxMailOut'} && $net_mail_out >= $params{'MaxMailOut'})",
+            "[ALRT] $SystemName.$DomainName : mail out = $net_mail_out (max=$params{'MaxMailOut'})",
+            sub { return
+                sprintf(gettext("During the last 5 minutes, %s outgoing e-mails were detected, "),$net_mail_out),
+                sprintf(gettext("you had set the alert limit to %s outgoing e-mails.\n"),$params{'MaxMailOut'}),
+                gettext("(Possible reasons : do you send spam ? administrate a mailing-list ?)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxMailOut";
+        }],
+        [
+            "($params{'MaxDiskSpace'} && $pourc_hd_used >= $params{'MaxDiskSpace'})",
+            "[ALRT] $SystemName.$DomainName : du = $pourc_hd_used % (max=$params{'MaxDiskSpace'} %)",
+            sub { return
+                sprintf(gettext("Your hard disk is %s %% full, "),$pourc_hd_used),
+                sprintf(gettext("you had set the alert limit to %s %%.\n"),$params{'MaxDiskSpace'}),
+                gettext("(Advice : free space by deleting temp files, or upgrade your disk space)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxDiskSpace";
+        }],
+        [
+            "($params{'MaxCpu'} && $cpu_total >= $params{'MaxCpu'})",
+            "[ALRT] $SystemName.$DomainName : cpu = $cpu_total % (max=$params{'MaxCpu'} %)",
+            sub { return
+                sprintf(gettext("Your processor is %s %% loaded, "),$cpu_total),
+                sprintf(gettext("you had set the alert limit to %s %%.\n"),$params{'MaxCpu'}),
+                gettext("(Possible reasons : Is there a crashed process ? an intense and prolonged activity on the server ?)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxCpu";
+        }],
+        [
+            "($params{'MaxHwTemp'} && '$params{'SensorsTag1'}' ne '' && '$sensors_temp1' ne 'U' && $sensors_temp1 >= $params{'MaxHwTemp'})",
+            "[ALRT] $SystemName.$DomainName : $params{'SensorsTag1'} = $sensors_temp1 deg C (max=$params{'MaxHwTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature reported by sensor %s is %s degrees C, "),($params{'SensorsTag1'},$sensors_temp1)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHwTemp'}),
+                gettext("(Advice : check the fans, and if the room is well ventilated or under AC.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHwTemp";
+        }],
+        [
+            "($params{'MaxHwTemp'} && '$params{'SensorsTag2'}' ne '' && '$sensors_temp2' ne 'U' && $sensors_temp2 >= $params{'MaxHwTemp'})",
+            "[ALRT] $SystemName.$DomainName : $params{'SensorsTag2'} = $sensors_temp2 deg C (max=$params{'MaxHwTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature reported by sensor %s is %s degrees C, "),($params{'SensorsTag2'},$sensors_temp2)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHwTemp'}),
+                gettext("(Advice : check the fans, and if the room is well ventilated or under AC.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHwTemp";
+        }],
+        [
+            "($params{'MaxHdTemp'} && '$params{'hd1'}' ne '' && '$sensors_temp_hd1' ne 'U' && $sensors_temp_hd1 >= $params{'MaxHdTemp'})",
+            "[ALRT] $SystemName.$DomainName: temp $params{'hd1'} = $sensors_temp_hd1 deg C (max=$params{'MaxHdTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature of %s hard disk is %s degrees C, "),($params{'hd1'},$sensors_temp_hd1)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHdTemp'}),
+                gettext("(Advice : check if the server case and the hard disks are well cooled.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHdTemp";
+        }],
+        [
+            "($params{'MaxHdTemp'} && '$params{'hd2'}' ne '' && '$sensors_temp_hd2' ne 'U' && $sensors_temp_hd2 >= $params{'MaxHdTemp'})",
+            "[ALRT] $SystemName.$DomainName: temp $params{'hd2'} = $sensors_temp_hd2 deg C (max=$params{'MaxHdTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature of %s hard disk is %s degrees C, "),($params{'hd2'},$sensors_temp_hd2)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHdTemp'}),
+                gettext("(Advice : check if the server case and the hard disks are well cooled.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHdTemp";
+        }],
+        [
+            "($params{'MaxSamba'} && $sessions_netbios >= $params{'MaxSamba'})",
+            "[ALRT] $SystemName.$DomainName : cnx samba = $sessions_netbios (max=$params{'MaxSamba'})",
+            sub { return
+                sprintf(gettext("There are %s opened connections to the SAMBA service, "),$sessions_netbios),
+                sprintf(gettext("you had set the alert limit to %s connections.\n"),$params{'MaxSamba'}),
+                gettext("(Advice : if you encounter problems accessing local neighboorhood, kill some connections.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxSamba";
+        }],
+        [            
+            "($params{'MaxSsh'} && $sessions_ssh >= $params{'MaxSsh'})",
+            "[ALRT] $SystemName.$DomainName : cnx ssh = $sessions_ssh (max=$params{'MaxSsh'})",
+            sub { return
+                sprintf(gettext("There are %s opened SSH sessions on the server, "),$sessions_ssh),
+                sprintf(gettext("you had set the alert limit to %s sessions.\n"),$params{'MaxSsh'}),
+                gettext("(Advice : check if it is known administrative connections, and not hackers.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxSsh";
+        }],
+        [
+            "($params{'MaxFtp'} && $sessions_ftp >= $params{'MaxFtp'})",
+            "[ALRT] $SystemName.$DomainName : cnx ftp = $sessions_ftp (max=$params{'MaxFtp'})",
+            sub { return
+                sprintf(gettext("There are %s opened FTP sessions on the server, "),$sessions_ftp),
+                sprintf(gettext("you had set the alert limit to %s sessions.\n"),$params{'MaxFtp'}),
+                gettext("(Advice : check that it is authorized users only.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxFtp";
+        }],
+        [
+            "($params{'MaxVpn'} && $sessions_vpn >= $params{'MaxVpn'})",
+            "[ALRT] $SystemName.$DomainName : cnx vpn = $sessions_vpn (max=$params{'MaxVpn'})",
+            sub { return
+                sprintf(gettext("There are %s opened VPN sessions on the server, "),$sessions_vpn),
+                sprintf(gettext("you had set the alert limit to %s sessions.\n"),$params{'MaxVpn'}),
+                gettext("(Advice : check that it is authorized users only.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxVpn";
+        }]
+    );
+    
+    #Une fois toutes ces alertes declarees, on va les tester et envoyer eventuellement
+    my $mail = new Mail::Send;
+    #destinataire
+    $mail->to("$params{'AlertMailRecipient'}");
+    #source
+    $mail->set("From","sme9admin-daemon");
+    foreach (@tab_of_alerts) {
+        my @line=$_;
+        my $test=$line[0][0]; # le test a effectuer
+        my $subject=$line[0][1]; # le sujet du message
+        my $text=$line[0][2]; # la fonction a appeler pour recuperer le texte du message
+        if (eval $test)
+        {
+            $mail->subject($subject);
+            my $body = $mail->open;
+            print $body "$SystemName.$DomainName :".localtime(time)."\n", &$text; # on appelle la fonction inline
+            $body->close; # on envoie le mail
+        }
+    }
+}

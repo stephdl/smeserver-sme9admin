@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# mysql
+if [ -d /var/lib/mysql/sme8admin ] && [ ! -d /var/lib/mysql/sme9admin ]; then
+    echo "Migrating existing sme8admin MySQL database."
+    mysqladmin create sme9admin
+    mysqldump sme8admin | mysql sme9admin
+    PASS=$(/sbin/e-smith/db configuration getprop sme9admind DbPassword)
+    mysql -e " grant all privileges on sme9admin.* to 'sme9admin'@'localhost' identified by '$PASS'"
+    mysqladmin flush-privileges
+elif [ -e /var/lib/mysql/sme9admin ]; then
+    # c'est une mise jour, on fait une upgrade de la base si besoin
+    sh /usr/share/doc/smeserver-sme9admin/update-mysql.sh
+else
+    #si c'est une freshinstall on cree la bd mysql
+    sh /usr/share/doc/smeserver-sme9admin/create-mysql.sh
+fi
+
+# rrd
+if [ -d /var/lib/sme8admin ] && [ ! -d /var/lib/sme9admin ]; then
+    echo "Migrating existing sme8admin RRDs files."
+    cp -vr /var/lib/sme8admin /var/lib/sme9admin
+elif [ -d /var/lib/sme9admin ]; then
+    # c'est une upgrade, rien de particulier a faire
+    echo ''
+else
+    #si c'est une freshinstall on cree les rrd
+    sh /usr/share/doc/smeserver-sme9admin/create-rrd.sh
+fi
