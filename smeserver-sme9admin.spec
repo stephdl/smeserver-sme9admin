@@ -12,7 +12,7 @@ Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
-Source: %{name}-%{version}.tgz
+Source: %{name}-%{version}.tar.gz
 #Patch0: smeserver-sme9admin-64bit.patch
 #Patch1: smeserver-sme9admin-1.3-startup.patch
 
