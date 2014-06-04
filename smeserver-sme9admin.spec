@@ -13,8 +13,6 @@ Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
-#Patch0: smeserver-sme9admin-64bit.patch
-#Patch1: smeserver-sme9admin-1.3-startup.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
@@ -23,7 +21,7 @@ BuildRequires: e-smith-devtools
 BuildRequires: gettext
 
 Requires: e-smith-base
-Requires: smeserver-release >= 98
+Requires: smeserver-release >= 9
 Requires: rrdtool-perl
 Requires: rrdtool
 Requires: hddtemp
@@ -59,8 +57,6 @@ This contrib is a bit inspired by e-smith-sysmon from Shad Lords.
 
 %prep
 %setup
-#%patch0 -p1
-#%patch1 -p1
 
 
 %build
@@ -85,11 +81,6 @@ rm -f %{name}-%{version}-filelist
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-## This is to correct a bug in the previous version
-#if [ -e /etc/e-smith/web/panels/manager/html/sme7admin/sme7admin.conf ]; then
-#	cp -a /etc/e-smith/web/panels/manager/html/sme7admin/sme7admin.conf \
-#		/etc/e-smith/web/panels/manager/html/sme7admin/_sme7admin.conf
-#fi
 
 %preun
 
