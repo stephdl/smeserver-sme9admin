@@ -24,7 +24,7 @@ use Locale::gettext;
 #----------------------------------
 #Declaration des variables globales
 my $progname='sme9admin';
-# si $DEBUG supérieur à 0, affichage d'infos de debug via la fonction debug()
+# si $DEBUG supÃ©rieur Ã  0, affichage d'infos de debug via la fonction debug()
 my $DEBUG = 0;
 
 #variables d'environnement du serveur
@@ -89,7 +89,7 @@ my @logs= ( "clamd/current",    # pour les VIRUS ???
             "sshd/current",     #pour les connexions ssh
             "messages",
             "qpsmtpd/current",  #pour les mails IN/OUT (RCPT FROM / MAIL TO) et les SPAM/VIRUS ??
-            "sqpsmtpd/current", #idem pour les connexions securisées
+            "sqpsmtpd/current", #idem pour les connexions securisÃ©es
             "proftpd/current",  #pour la date de fin de connection FTP
             "secure",           #pour les connexion FTP avec le username authentifie
             "xferlog");         #pour les details des transferts ftp
@@ -104,7 +104,7 @@ my %mois=("Jan"=>1,"jan"=>1,
           "May"=>5,"mai"=>5,
           "Jun"=>6,"jun"=>6,
           "Jul"=>7,"jul"=>7,
-          "Aug"=>8,"aoû"=>8,
+          "Aug"=>8,"aoÃ»"=>8,
           "Sep"=>9,"sep"=>9,
           "Oct"=>10,"oct"=>10,
           "Nov"=>11,"nov"=>11,
@@ -336,12 +336,12 @@ sub readConf
 ################################################ Pique sur perl-gratuit.com
 sub ip2host {
     my ($ip)=@_;                     # adresse IP en argument
-    # Déclaration des variables utilisées
+    # DÃ©claration des variables utilisÃ©es
     my ($name,$packaddr,@bytes);
-    $ip =~ s/^\s+|\s+$//g;           # on supprime des espaces éventuels en début et fin de l'IP
-    @bytes = split (/\./, $ip);      # on range dans un tableau, les 4 nombres séparés par des points de l'IP
-    $packaddr = pack ("C4", @bytes); # on encode l'adresse IP, en un entier compacté
-    # on lance la résolution de l'adresse IP #
+    $ip =~ s/^\s+|\s+$//g;           # on supprime des espaces Ã©ventuels en dÃ©but et fin de l'IP
+    @bytes = split (/\./, $ip);      # on range dans un tableau, les 4 nombres sÃ©parÃ©s par des points de l'IP
+    $packaddr = pack ("C4", @bytes); # on encode l'adresse IP, en un entier compactÃ©
+    # on lance la rÃ©solution de l'adresse IP #
     if ($name =gethostbyaddr ($packaddr, 2))     {return $name;}
     else     {return '';}
 }
@@ -398,7 +398,7 @@ sub seek_log {
                     debug ("$log : seek en position $fseek\n");
                 }
                 else { 
-                    debug ("$log : seek impossible : \$fino='$fino' (Numérique) = a \$ino='$ino' ?\n");
+                    debug ("$log : seek impossible : \$fino='$fino' (NumÃ©rique) = a \$ino='$ino' ?\n");
                     debug ("              \$fseek='$fseek' (Numerique) <= a \$size='$size' ?\n");
                 } 
             }
@@ -427,7 +427,7 @@ sub parse_logs {
 
     ($net_dhcp,$net_mail_in,$net_mail_out,$net_spam,$net_virus)=(0,0,0,0,0);
     foreach my $nom (@logs) {
-        # on recupere un file handle positionné comme il faut
+        # on recupere un file handle positionnÃ© comme il faut
         my $fh = seek_log("$logdir$nom");
         unless ( defined $fh ) {
             debug( "impossible d'ouvrir le fichier $nom\n");
@@ -520,14 +520,14 @@ sub parse_logs {
                 #Wed Dec  7 20:19:58 2005 0 10.246.200.10 1831631 /home/e-smith/files/ibays/Primary/files/win2.png b _ i r admin ftp 0 * c
                 #Wed Dec  7 20:19:59 2005 0 10.246.200.10 35759 /home/e-smith/files/ibays/Primary/files/wine.png b _ i r admin ftp 0 * c
                 if($l =~ /\w{3} (\w{3}\s{1,2}\d{1,2} [0-9:]{8}) \d{4} \d+ (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) (\d+) [0-9a-zA-Z\.\-\_\/]+ \w \w (\w) (\w) ([A-Z0-9a-z\@_\-]+) ftp/) {
-                    #$1:date $2.$3.$4.$5:ip $6:volume $7:sens $8:loggué/anon ? $9:login
+                    #$1:date $2.$3.$4.$5:ip $6:volume $7:sens $8:logguÃ©/anon ? $9:login
                     my $date=mkmysqldate($1);
                     my $ip=ipdot2ipnum($2,$3,$4,$5);
                     my $requete="UPDATE ftp SET ";
                     #quand c'est un d(deleted) volume=0 donc osef
                     if ($7 eq 'o') { $requete.="volume_out=volume_out+$6 "; }
                     else           { $requete.="volume_in=volume_in+$6 "; }
-                    #si l'user est logué
+                    #si l'user est loguÃ©
                     if ($8 eq 'r') { $requete.="where login='$9'"; }
                     else           { $requete.="where login='anonymous'"; }
 
@@ -724,7 +724,7 @@ sub parse_logs {
                     next;
                 }
 
-                #Deprecated !!! Dans sme7, l'auth se fait via Radius, qui ne loggue rien par défaut => pas moyen de connaitre simplement le login
+                #Deprecated !!! Dans sme7, l'auth se fait via Radius, qui ne loggue rien par dÃ©faut => pas moyen de connaitre simplement le login
                 #VPN login
                 #Jun 25 15:43:36 test pppd[637]: CHAP peer authentication succeeded for rv                                
                 if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: CHAP peer authentication succeeded for ([0-9a-z-]+)/o) {
@@ -770,7 +770,7 @@ sub parse_logs {
                 }
             }
         }
-        # libération du fichier de log courant, enregistrement de la position
+        # libÃ©ration du fichier de log courant, enregistrement de la position
         tell_log("$logdir$nom", $fh);
     }
     deconnectBD();
@@ -835,33 +835,33 @@ sub samba_status {
 sub get_sensors_hddtemp {
     # $sensors_temp_cpu,$sensors_temp_hd,$sensors_temp_mb,$sensors_fan_speed
     #fan2:     3970 RPM  (min = 3000 RPM, div = 2)
-    #temp1:       +30°C  (limit =  +60°C)                       sensor = thermistor
-    #temp2:     +46.0°C  (limit =  +60°C, hysteresis =  +50°C) sensor = 3904 transistor
+    #temp1:       +30Â°C  (limit =  +60Â°C)                       sensor = thermistor
+    #temp2:     +46.0Â°C  (limit =  +60Â°C, hysteresis =  +50Â°C) sensor = 3904 transistor
 
     ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed)=('U','U','U','U','U');
 
     my ($tag1,$tag2,$tag3,$tag4,$tag5)=($params{'SensorsTag1'},$params{'SensorsTag2'},$params{'SensorsTagFan'},
         $params{'hd1'},$params{'hd2'}); 
 
-    #a noter que si hddtemp & lm_sensors n'ont pas ete installés,ca ne plante pas !!
+    #a noter que si hddtemp & lm_sensors n'ont pas ete installÃ©s,ca ne plante pas !!
     my @sensors=`/usr/bin/sensors -A 2> /dev/null`;
     foreach (@sensors) {
-        if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp1=$2;}
-        if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp2=$2;}
+        if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+)Â°C/o)) {$sensors_temp1=$2;}
+        if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+)Â°C/o)) {$sensors_temp2=$2;}
         if ($tag3 ne "" && (/$tag3:\s+(\d+) RPM/o)) {$sensors_fan_speed=$1;}
     }
 
     if ($tag4 ne "") {
         my @hddtemp=`/usr/sbin/hddtemp /dev/$tag4 2> /dev/null`;
         foreach (@hddtemp) {
-            #/dev/hda: ExcelStor Technology J680 :  39°C ou °F
-            if (/\/dev\/$tag4:.*:\s+(\d+)°C/o) {$sensors_temp_hd1=$1;}
+            #/dev/hda: ExcelStor Technology J680 :  39Â°C ou Â°F
+            if (/\/dev\/$tag4:.*:\s+(\d+)Â°C/o) {$sensors_temp_hd1=$1;}
         }
     }
     if ($tag5 ne "") {
         my @hddtemp=`/usr/sbin/hddtemp /dev/$tag5 2> /dev/null`;
         foreach (@hddtemp) {
-            if (/\/dev\/$tag5:.*:\s+(\d+)°C/) {$sensors_temp_hd2=$1;}
+            if (/\/dev\/$tag5:.*:\s+(\d+)Â°C/) {$sensors_temp_hd2=$1;}
         }
     }
 }
@@ -1147,7 +1147,7 @@ sub mail_status {
 sub mail_alerte {
     my $pourc_hd_used = int(($hd_used/$hd_total)*100);
     #ici, on utilise un tableau d'alertes. (Je trouve ca plus elegant et plus extensible). Pour chacune, on a 
-    # - un test qui déclenche ou non l'alerte
+    # - un test qui dÃ©clenche ou non l'alerte
     # - le sujet du mail a envoyer
     # - une fonction inline qui renvoie le texte du mail
     my @tab_of_alerts=(
