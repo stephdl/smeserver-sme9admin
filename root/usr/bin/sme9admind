@@ -835,8 +835,8 @@ sub samba_status {
 sub get_sensors_hddtemp {
     # $sensors_temp_cpu,$sensors_temp_hd,$sensors_temp_mb,$sensors_fan_speed
     #fan2:     3970 RPM  (min = 3000 RPM, div = 2)
-    #temp1:       +30C  (limit =  +60C)                       sensor = thermistor
-    #temp2:     +46.0C  (limit =  +60C, hysteresis =  +50C) sensor = 3904 transistor
+    #temp1:       +30°C  (limit =  +60°C)                       sensor = thermistor
+    #temp2:     +46.0°C  (limit =  +60°C, hysteresis =  +50°C) sensor = 3904 transistor
 
     ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed)=('U','U','U','U','U');
 
@@ -846,22 +846,22 @@ sub get_sensors_hddtemp {
     #a noter que si hddtemp & lm_sensors n'ont pas ete installés,ca ne plante pas !!
     my @sensors=`/usr/bin/sensors -A 2> /dev/null`;
     foreach (@sensors) {
-        if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+)C/o)) {$sensors_temp1=$2;}
-        if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+)C/o)) {$sensors_temp2=$2;}
+        if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp1=$2;}
+        if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp2=$2;}
         if ($tag3 ne "" && (/$tag3:\s+(\d+) RPM/o)) {$sensors_fan_speed=$1;}
     }
 
     if ($tag4 ne "") {
         my @hddtemp=`/usr/sbin/hddtemp /dev/$tag4 2> /dev/null`;
         foreach (@hddtemp) {
-            #/dev/hda: ExcelStor Technology J680 :  39C ou °F
-            if (/\/dev\/$tag4:.*:\s+(\d+)C/o) {$sensors_temp_hd1=$1;}
+            #/dev/hda: ExcelStor Technology J680 :  39°C ou °F
+            if (/\/dev\/$tag4:.*:\s+(\d+)°C/o) {$sensors_temp_hd1=$1;}
         }
     }
     if ($tag5 ne "") {
         my @hddtemp=`/usr/sbin/hddtemp /dev/$tag5 2> /dev/null`;
         foreach (@hddtemp) {
-            if (/\/dev\/$tag5:.*:\s+(\d+)C/) {$sensors_temp_hd2=$1;}
+            if (/\/dev\/$tag5:.*:\s+(\d+)°C/) {$sensors_temp_hd2=$1;}
         }
     }
 }
