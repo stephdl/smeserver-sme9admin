@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 2
+%define release 3
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -31,7 +31,7 @@ Requires: lm_sensors
 AutoReqProv: no
 
 %changelog
-* Wed Jun 04 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.5-2
+* Wed Jun 04 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.5-3
 - Initial release to SME Server 9
 
 * Sun Sep 09 2012 JP Pialasse <test@pialasse.com> 1.3-3.sme
