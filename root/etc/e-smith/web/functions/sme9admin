@@ -686,7 +686,7 @@ sub svcControl
 			{
 				
 				my $cmd='';
-				if ($2=~/^(ulogd|smbd|nmbd|klogd)$/)#(-d "/service/$2") 
+				if ($2=~/^(ulogd|smbd|nmbd|rsyslog)$/)#(-d "/service/$2") 
 				{$cmd = `/usr/bin/sv $1 $2`;}
 				else 
 				    {$cmd=`/sbin/e-smith/service $2 $1`;}
@@ -719,7 +719,7 @@ sub svcControl
 				    {$ordre="stop";}
 				
 				my $cmd='';
-				if ($2=~/^(ulogd|smbd|nmbd|klogd)$/)#(-d "/service/$2")
+				if ($2=~/^(ulogd|smbd|nmbd|rsyslog)$/)#(-d "/service/$2")
 				{$cmd = `/usr/bin/sv $ordre $2`;}
 				else 
 				    {$cmd=`/sbin/e-smith/service $2 $ordre`;}
@@ -1055,15 +1055,15 @@ my $requete="SELECT substr(debut,1,4), substr(debut,6,2)  FROM pppoe ORDER BY de
         
 	my @debut = $rq->fetchrow_array();
 # get first db entry
-my $requete="SELECT substr(fin,1,4), substr(fin,6,2)  FROM pppoe ORDER BY debut DESC LIMIT 1";
+my $requete_DESC="SELECT substr(fin,1,4), substr(fin,6,2)  FROM pppoe ORDER BY debut DESC LIMIT 1";
 
     #connexion a la base de donnees mySQL
         connectBD();
         #recuperation des donnees
-        my $rq=$bd->prepare($requete) or print $q->p(sprintf(gettext("MySQL error : Impossible to prepare SQL query \"%s\" : %s\n"),$requete,$bd->errstr));
-        $rq->execute or print $q->p(sprintf(gettext("MySQL error : Can't execute query : %s\n"),$rq->errstr));
+        my $rq_DESC=$bd->prepare($requete_DESC) or print $q->p(sprintf(gettext("MySQL error : Impossible to prepare SQL query \"%s\" : %s\n"),$requete_DESC,$bd->errstr));
+        $rq_DESC->execute or print $q->p(sprintf(gettext("MySQL error : Can't execute query : %s\n"),$rq_DESC->errstr));
 
-        my @fin = $rq->fetchrow_array();
+        my @fin = $rq_DESC->fetchrow_array();
  
 	my $end_yymm = $debut[0].$debut[1];
 	my $yymm = $fin[0].$fin[1];
