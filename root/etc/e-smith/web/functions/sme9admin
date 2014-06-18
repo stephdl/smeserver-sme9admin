@@ -281,7 +281,7 @@ sub accueil
  	my @services =	("#".gettext("Web services"),"httpd-e-smith","httpd-admin","squid",
                     "#".gettext("Administrative services"), "sshd", "sme9admind",
                     "#".gettext("Network services"),"wan","dhcpd","pptpd","ippp", 
-                    "#".gettext("File-sharing services"),"smb","smbd","nmbd","proftpd", 
+                    "#".gettext("File-sharing services"),"smb","smbd","nmbd","ftp","proftpd", 
                     "#".gettext("E-mail services"),"pop3","pop3s","imaps","imap","dovecot","qmail","qpsmtpd","sqpsmtpd", "clamd", "freshclam","spamd",#mail
                     "#".gettext("DNS services"),"tinydns","dnscache", #dns
                     "#".gettext("Authentication services"),"oidentd","identd","ldap","smtp-auth-proxy","radiusd", #auth
