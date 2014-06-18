@@ -22,14 +22,13 @@ BuildRequires: e-smith-devtools
 BuildRequires: gettext
 
 Requires: e-smith-base
-Requires: smeserver-release >= 8
+Requires: smeserver-release >= 9
 Requires: rrdtool-perl
 Requires: rrdtool
 Requires: hddtemp
 Requires: sysstat
 Requires: lm_sensors
 Obsoletes: smeserver-sme8admin
-Obsoletes: smeserver-sme6admin
 
 AutoReqProv: no
 
