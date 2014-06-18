@@ -8,19 +8,19 @@
 <link rel="stylesheet" type="text/css" href="/server-common/css/sme_core.css" />
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 
-<title> Documentation sme9admin </title>
+<title> Documentation Sme8admin </title>
 </head>
 <body>
 
-<h3> Documentation sme9admin </h3>
+<h3> Documentation Sme8admin </h3>
 <p>
 <b> Auteur :</b> Landry Breuil <br />
 <b> Date de cr&eacute;ation de cette doc :</b> 29/01/2006 <br />
-<b> Version de sme9admin correspondante :</b> 1.1.0-1 <br />
-<b> Versions de SME test&eacute;es avec sme9admin :</b> 7b5, 7pre1 <br />
+<b> Version de Sme8admin correspondante :</b> 1.1.0-1 <br />
+<b> Versions de SME test&eacute;es avec Sme8admin :</b> 7b5, 7pre1 <br />
 
 <p><i> Pourquoi cette contrib ? </i>:
-<br />Pouvoir voir en un coup d'oeil ce qu'il se passe sur le serveur sans avoir &agrave; utiliser la console d'administration par ssh. L'accueil de la contrib est accessible dans le server-manager d'SME &agrave; l'onglet <code>sme9admin</code>. Cette contrib est l'&eacute;volution de sme6admin pour SME7, et &agrave; &eacute;t&eacute; r&eacute;&eacute;crite presque totalement.
+<br />Pouvoir voir en un coup d'oeil ce qu'il se passe sur le serveur sans avoir &agrave; utiliser la console d'administration par ssh. L'accueil de la contrib est accessible dans le server-manager d'SME &agrave; l'onglet <code>Sme8admin</code>. Cette contrib est l'&eacute;volution de sme6admin pour SME7, et &agrave; &eacute;t&eacute; r&eacute;&eacute;crite presque totalement.
 </p>
 
 <p><i> Description des diff&eacute;rentes pages </i>:
@@ -40,7 +40,7 @@
 <ul>
    <li />Un graphe comportant les temp&eacute;ratures du processeur et de la carte m&egrave;re detect&eacute;es par lm_sensors, ainsi que celle des disques durs avec hddtemp.
 	<li />Un graphe avec la vitesse de rotation du ventilateur du processeur.
-	<br /><b>(Il faut noter que ces valeurs d&eacute;pendent enti&egrave;rement du support de votre mat&eacute;riel par lm_sensors et hddtemp. De plus, il faut configurer correctement sme9admin 
+	<br /><b>(Il faut noter que ces valeurs d&eacute;pendent enti&egrave;rement du support de votre mat&eacute;riel par lm_sensors et hddtemp. De plus, il faut configurer correctement Sme8admin 
    si l'on veut que les graphes se remplissent.)</b>
 	<br />On peut avoir ces graphes sur diff&eacute;rentes dur&eacute;es en suivant les liens du haut de la page.
 </ul>
@@ -48,7 +48,7 @@
 <ul>
 <li />Un graphe sur les sessions r&eacute;seau ouvertes. On monitore les connexions ftp, ssh, netbios, afp et vpn. Ces courbes correspondent au nombre de connexions tcp ouvertes sur ces services aux ports 21,22,139,548 et 1723.
 <li />Un graphe avec le nombre de renouvellement de bails dhcp et le nombre de connexions samba. Il permet de mesurer l'utilisation du r&eacute;seau local. Les connexions samba diff&egrave;rent ici des connexions netbios par le fait qu'un poste client peut &ecirc;tre connect&eacute; &agrave; plusieurs partages samba en m&ecirc;me temps, cela ne donne qu'une connexion netbios et plusieurs "connexions" samba.
-<li />Un graphe avec le nombre de mails entrant/sortant (valeurs empil&eacute;es) sur le serveur. Par d&eacute;faut, on ne g&egrave;re que les e-mails arrivant sur le domaine principal du serveur, sur les domaines virtuels du serveur, ainsi que les mails relay&eacute;s par fetchmail sur des boites locales. On peut ajouter des domaines en configurant sme9admin, mais les e-mails ne seront d&eacute;tect&eacute;s que s'ils transitent par le serveur de messagerie de SME. On a aussi le nombre de spams rejet&eacute;s par Spamassassin et le nombre de virus filtr&eacute;s par ClamAV.
+<li />Un graphe avec le nombre de mails entrant/sortant (valeurs empil&eacute;es) sur le serveur. Par d&eacute;faut, on ne g&egrave;re que les e-mails arrivant sur le domaine principal du serveur, sur les domaines virtuels du serveur, ainsi que les mails relay&eacute;s par fetchmail sur des boites locales. On peut ajouter des domaines en configurant Sme8admin, mais les e-mails ne seront d&eacute;tect&eacute;s que s'ils transitent par le serveur de messagerie de SME. On a aussi le nombre de spams rejet&eacute;s par Spamassassin et le nombre de virus filtr&eacute;s par ClamAV.
 <li />Un graphe montrant le temps de r&eacute;ponse de la passerelle par d&eacute;faut vers internet. La cible du ping est configurable, car il peut &ecirc;tre utile lorsqu'on n'est pas "en frontal" sur internet de tester la latence avec un quelconque autre site, et pas avec la passerelle par d&eacute;faut. Si le ping d&eacute;passe 200ms, on bride la valeur pour que le graphe reste "lisible". (ie, si on a un ping de 4s, on aurait un pic sur le graphe et rien &agrave; cot&eacute;.)
 <li />Deux graphes montrant le volume du trafic r&eacute;seau brut passant par le serveur. Souvent, le volume entrant sur l'interface externe correspond au volume sortant sur l'interface interne, c'est tout le trafic relay&eacute; par la passerelle vers le r&eacute;seau local. On peut voir sur un troisi&egrave;me graphe le traffic qui n'est pas du routage. Si l'on est en <code>server-only</code>, un seul graphe est affich&eacute;.
 </ul>
@@ -67,7 +67,7 @@
 <br />Cette page va servir &agrave; v&eacute;rifier qu'un service r&eacute;pond vraiment lorsque on lui envoie un requ&ecirc;te.
 <br />En cliquant sur les diff&egrave;rents liens, on peut tester les services httpd, smbd, nmbd, popd, sshd, ftpd, smtpfont-qmail ainsi que le temps de r&eacute;ponse du serveur &agrave; un ping.
 
-<br /><br /><li />Page de configuration de sme9admin :
+<br /><br /><li />Page de configuration de Sme8admin :
 <br />Cette page permet de configurer le d&eacute;mon <code>sme9admind</code> ainsi que certains param&egrave;tres de l'interface web. La configuration est stock&eacute;e dans un fichier texte. Les options sont les suivantes :
 <ul>
 <li /> Destinataire des messages de status, ainsi que leur fr&eacute;quence. Si on met 0, ils sont d&eacute;sactiv&eacute;s.
@@ -88,13 +88,13 @@
 <br />On &agrave; un graphe d&eacute;taillant le % cpu, la taille de la m&eacute;moire vive allou&eacute;s &agrave; des processus squid correspondant au proxy transparent, ainsi que leur nombre.
 
 <br /><br /><li />Page de d&eacute;tail du service pppoe :
-<br />Elle pr&eacute;sente l'historique des derni&egrave;res connexions ADSL par pppoe, avec le d&eacute;but, l'ip attribu&eacute;e, ainsi que la date de fin, la dur&eacute;e et le volume transf&eacute;r&eacute; durant la connexion. On met en &eacute;vidence les connexions de moins de 4 heures, et les d&eacute;connexions de plus d'une minute. Ces deux param&egrave;tres peuvent &ecirc;tre chang&eacute;s dans la page de configuration de sme9admin. Ainsi, on peut observer la fiabilit&eacute;/stabilit&eacute; de la connexion &agrave; Internet.
+<br />Elle pr&eacute;sente l'historique des derni&egrave;res connexions ADSL par pppoe, avec le d&eacute;but, l'ip attribu&eacute;e, ainsi que la date de fin, la dur&eacute;e et le volume transf&eacute;r&eacute; durant la connexion. On met en &eacute;vidence les connexions de moins de 4 heures, et les d&eacute;connexions de plus d'une minute. Ces deux param&egrave;tres peuvent &ecirc;tre chang&eacute;s dans la page de configuration de Sme8admin. Ainsi, on peut observer la fiabilit&eacute;/stabilit&eacute; de la connexion &agrave; Internet.
 
 <br /><br /><li />Page de d&eacute;tail du service dhcpd :
 <br />On dispose ici de la date des derniers renouvellements de baux par les postes du r&eacute;seau local, ainsi que de leurs adresses MAC, leurs IPs, et leurs nom DNS attribu&eacute; par le serveur. On peut ainsi voir quelle stations ont &eacute;t&eacute; allum&eacute;es r&eacute;cemment.
 
 <br /><br /><li />Page de d&eacute;tail du service pptpd :
-<br />On a la liste des connexions vpn effectu&eacute;es sur le serveur, avec les dates de d&eacute;but et de fin, la dur&eacute;e, l'IP du client vpn, son login et le volume transf&eacute;r&eacute;. On met en &eacute;vidence les connexions de plus de 2 heures, ce param&egrave;tre peut &ecirc;tre chang&eacute; dans la page de configuration de sme9admin.
+<br />On a la liste des connexions vpn effectu&eacute;es sur le serveur, avec les dates de d&eacute;but et de fin, la dur&eacute;e, l'IP du client vpn, son login et le volume transf&eacute;r&eacute;. On met en &eacute;vidence les connexions de plus de 2 heures, ce param&egrave;tre peut &ecirc;tre chang&eacute; dans la page de configuration de Sme8admin.
 
 <br /><br /><li />Page de d&eacute;tail du service smb/nmb :
 <br />Cette page propose tout d'abord l'historique des derni&egrave;res connexions d'un triplet (machine/ip/personne) &agrave; un des partages r&eacute;seau samba du serveur, ainsi que la dur&eacute;e approximative &agrave; cinq minutes.

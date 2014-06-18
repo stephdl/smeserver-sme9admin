@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# sme9admin - demon perl collectant les statistiques du systeme
+# Sme8admin - demon perl collectant les statistiques du systeme
 # Copyright (C) 2006
 # This file is distributed under the GPL license.
 # Landry Breuil <landry@firewall-services.com>, 2006.
@@ -24,7 +24,7 @@ use Locale::gettext;
 #----------------------------------
 #Declaration des variables globales
 my $progname='sme9admin';
-# si $DEBUG supÃ©rieur Ã  0, affichage d'infos de debug via la fonction debug()
+# si $DEBUG supérieur à 0, affichage d'infos de debug via la fonction debug()
 my $DEBUG = 0;
 
 #variables d'environnement du serveur
@@ -89,7 +89,7 @@ my @logs= ( "clamd/current",    # pour les VIRUS ???
             "sshd/current",     #pour les connexions ssh
             "messages",
             "qpsmtpd/current",  #pour les mails IN/OUT (RCPT FROM / MAIL TO) et les SPAM/VIRUS ??
-            "sqpsmtpd/current", #idem pour les connexions securisÃ©es
+            "sqpsmtpd/current", #idem pour les connexions securisées
             "proftpd/current",  #pour la date de fin de connection FTP
             "secure",           #pour les connexion FTP avec le username authentifie
             "xferlog");         #pour les details des transferts ftp
@@ -104,7 +104,7 @@ my %mois=("Jan"=>1,"jan"=>1,
           "May"=>5,"mai"=>5,
           "Jun"=>6,"jun"=>6,
           "Jul"=>7,"jul"=>7,
-          "Aug"=>8,"aoÃ»"=>8,
+          "Aug"=>8,"aoû"=>8,
           "Sep"=>9,"sep"=>9,
           "Oct"=>10,"oct"=>10,
           "Nov"=>11,"nov"=>11,
@@ -175,7 +175,7 @@ if (-e $lockfile)
     my $test=`/bin/ps -e | /bin/grep $oldPID | /usr/bin/rev | /bin/cut -c1-10 | /usr/bin/rev|tr -d '\n'`;
     if  ( $test  eq "sme9admind")
         {
-        print "sme9admind is currently running, with the PID present in its PID file($oldPID).\n";
+        print "Sme8admind is currently running, with the PID present in its PID file($oldPID).\n";
         print "Try 'pgrep sme9admin' to see if the daemon crashed, kill it, then exec 'rm -f $lockfile' before restarting daemon.\n";
         exit 1;
         }
@@ -292,8 +292,11 @@ sub connectBD
 #DBI:mysql, deconnecte MOI
 sub deconnectBD
 {
-    $bd->disconnect;
-     if (!defined ($bd)) {print "MYSQL error $DBI::errstr\n";}
+    if (defined ($bd)) {
+    	$bd->disconnect or 
+     	warn "MYSQL error $DBI::errstr\n";}
+	else 
+	{ print "mysql : nothing to disconnect";}
 }
 
 #----------------------------------------------------------------
@@ -336,12 +339,12 @@ sub readConf
 ################################################ Pique sur perl-gratuit.com
 sub ip2host {
     my ($ip)=@_;                     # adresse IP en argument
-    # DÃ©claration des variables utilisÃ©es
+    # Déclaration des variables utilisées
     my ($name,$packaddr,@bytes);
-    $ip =~ s/^\s+|\s+$//g;           # on supprime des espaces Ã©ventuels en dÃ©but et fin de l'IP
-    @bytes = split (/\./, $ip);      # on range dans un tableau, les 4 nombres sÃ©parÃ©s par des points de l'IP
-    $packaddr = pack ("C4", @bytes); # on encode l'adresse IP, en un entier compactÃ©
-    # on lance la rÃ©solution de l'adresse IP #
+    $ip =~ s/^\s+|\s+$//g;           # on supprime des espaces éventuels en début et fin de l'IP
+    @bytes = split (/\./, $ip);      # on range dans un tableau, les 4 nombres séparés par des points de l'IP
+    $packaddr = pack ("C4", @bytes); # on encode l'adresse IP, en un entier compacté
+    # on lance la résolution de l'adresse IP #
     if ($name =gethostbyaddr ($packaddr, 2))     {return $name;}
     else     {return '';}
 }
@@ -398,7 +401,7 @@ sub seek_log {
                     debug ("$log : seek en position $fseek\n");
                 }
                 else { 
-                    debug ("$log : seek impossible : \$fino='$fino' (NumÃ©rique) = a \$ino='$ino' ?\n");
+                    debug ("$log : seek impossible : \$fino='$fino' (Numérique) = a \$ino='$ino' ?\n");
                     debug ("              \$fseek='$fseek' (Numerique) <= a \$size='$size' ?\n");
                 } 
             }
@@ -424,10 +427,51 @@ sub tell_log {
 
 sub parse_logs {
     connectBD();
+    # ici on met a jour volume connexion meme si pas fini si pppoe et si pas trouvé de fin dans log
+    my $smedb=esmith::ConfigDB->open;
+    my $ppoeif = $smedb->get("ExternalInterface")->prop('Name');
+    my $recBytes=`cat /proc/net/dev|grep $ppoeif|cut -d ':' -f2|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d ' ' -f1`;
+    my $senBytes=`cat /proc/net/dev|grep $ppoeif|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d " " -f9`;
+
+    #my $requete="SELECT  pid_pppd  FROM pppoe WHERE  ORDER DESC LIMIT 1";
+    #my $rq=$bd->prepare($requete) or print $q->p(sprintf(gettext("MySQL error : Impossible to prepare SQL query \"%s\" : %s\n"),$requete,$bd->errstr));
+    #$rq->execute or print $q->p(sprintf(gettext("MySQL error : Can't execute query : %s\n"),$rq->errstr));
+    #my $pidPppd = $rq->fetchrow_array();
+    my $pidPppd=`cat /var/run/$ppoeif.pid`;
+    print "the current pid for pppd is $pidPppd \n";
+
+    my $reslt1=execute_sql_query("SELECT * FROM pppoe WHERE pid_pppd='$pidPppd'");
+    #si on a trouve une ligne ==> update dans pppoe
+    if ($reslt1 != "0E0")    { 
+	    my $requete1="UPDATE pppoe SET volume_out=$senBytes, volume_in=$recBytes, fin=now() where pid_pppd=$pidPppd ORDER BY debut DESC LIMIT 1;";
+	    #print "requete a executer : $requete1 \n";
+	    execute_sql_query($requete1);
+	    }
+    # on fait de même pour les conenxions VPN
+    foreach  my $mypid (`ls /var/run/ppp[0-9]*.pid`){
+	$mypid =~ /\/var\/run\/(ppp[0-9]*).pid/;
+	my $vpnif = $1;
+	$mypid = `cat $mypid`;
+	if ($vpnif ne $ppoeif  ) {
+    		my $recBytes=`cat /proc/net/dev|grep $vpnif|cut -d ':' -f2|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d ' ' -f1`;
+    		my $senBytes=`cat /proc/net/dev|grep $vpnif|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d " " -f9`;
+
+	    	my $reslt1=execute_sql_query("SELECT * FROM vpn WHERE pid_pppd='$mypid'");
+	
+	    	if ($reslt1 != "0E0")    {
+            		my $requete1="UPDATE vpn SET volume_out=$senBytes, volume_in=$recBytes, fin=now() where pid_pppd=$mypid  ORDER BY debut DESC LIMIT 1;";
+            		#print "requete a executer : $requete1 \n";
+            		execute_sql_query($requete1);
+            		}
+		}
+    }
+
+
+
 
     ($net_dhcp,$net_mail_in,$net_mail_out,$net_spam,$net_virus)=(0,0,0,0,0);
     foreach my $nom (@logs) {
-        # on recupere un file handle positionnÃ© comme il faut
+        # on recupere un file handle positionné comme il faut
         my $fh = seek_log("$logdir$nom");
         unless ( defined $fh ) {
             debug( "impossible d'ouvrir le fichier $nom\n");
@@ -520,14 +564,14 @@ sub parse_logs {
                 #Wed Dec  7 20:19:58 2005 0 10.246.200.10 1831631 /home/e-smith/files/ibays/Primary/files/win2.png b _ i r admin ftp 0 * c
                 #Wed Dec  7 20:19:59 2005 0 10.246.200.10 35759 /home/e-smith/files/ibays/Primary/files/wine.png b _ i r admin ftp 0 * c
                 if($l =~ /\w{3} (\w{3}\s{1,2}\d{1,2} [0-9:]{8}) \d{4} \d+ (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) (\d+) [0-9a-zA-Z\.\-\_\/]+ \w \w (\w) (\w) ([A-Z0-9a-z\@_\-]+) ftp/) {
-                    #$1:date $2.$3.$4.$5:ip $6:volume $7:sens $8:logguÃ©/anon ? $9:login
+                    #$1:date $2.$3.$4.$5:ip $6:volume $7:sens $8:loggué/anon ? $9:login
                     my $date=mkmysqldate($1);
                     my $ip=ipdot2ipnum($2,$3,$4,$5);
                     my $requete="UPDATE ftp SET ";
                     #quand c'est un d(deleted) volume=0 donc osef
                     if ($7 eq 'o') { $requete.="volume_out=volume_out+$6 "; }
                     else           { $requete.="volume_in=volume_in+$6 "; }
-                    #si l'user est loguÃ©
+                    #si l'user est logué
                     if ($8 eq 'r') { $requete.="where login='$9'"; }
                     else           { $requete.="where login='anonymous'"; }
 
@@ -631,7 +675,7 @@ sub parse_logs {
                 if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName afpd\[(\d+)\]: login (\w+) \(uid \d+/o) {
                     #$1: date $2:pid $3:login
                     my $debut=mkmysqldate($1);
-                    #pourquoi cette bidouille sur la date ??
+                    	#pourquoi cette bidouille sur la date ??
                     #pour retrouver la bonne cnx=>pid et la date du open session 
                     #il doit avoir eu lieu au plus 10sec avant le login
                     execute_sql_query("UPDATE afp SET login='$3' where pid_afpd=$2 and debut > '$debut' - interval 10 second");
@@ -665,7 +709,7 @@ sub parse_logs {
                  #Jul 14 12:49:58 sas pppd[1878]: rcvd [IPCP ConfAck id=0x2 <addr 213.41.134.153>]
                  #Match: date hostname pppd[pid]: rcvd [IPCP ConfAck id=0xxx? <addr ip>]
                  #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: rcvd \[IPCP ConfAck id=0x\w+ <addr (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})>\]/o)
-                 if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: local  IP address (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                 if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: rcvd \[IPCP ConfAck id=0x\w+ <addr (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})>\]/o) {
                     #$1: date $2:pid $3.$4.$5.$6:ip
                     my $date=mkmysqldate($1);
                     my $ip=ipdot2ipnum($3,$4,$5,$6);
@@ -674,65 +718,107 @@ sub parse_logs {
                   }
 
                   #PPPOE ip peer
-                  #Jul 14 12:49:58 sas pppd[1878]: sent [IPCP ConfAck id=0x1 <addr 62.4.16.234>]
+                  #Jul 14 12:49:58 sas pppd[1878]: sent [IPCP ConfAck id=0x1 <addr 62.12.16.234>]
                   #Match: date hostname pppd[pid]: sent [IPCP ConfAck id=0xxx? <addr ip>]
                   #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: sent \[IPCP ConfAck id=0x\w+ <addr (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})>\]/o)
                   if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: remote IP address (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
                      #$1: date $2:pid $3.$4.$5.$6:ip
                      my $date=mkmysqldate($1);
                      my $ip=ipdot2ipnum($3,$4,$5,$6);
-                     execute_sql_query("UPDATE pppoe SET peer='$ip' where pid_pppd=$2 and debut > '$date' - interval 5 second");
+                    #faut faire un update, mais soit dans pppoe, soit dans vpn
+                    my $reslt=execute_sql_query("SELECT * FROM pppoe WHERE pid_pppd='$2' ORDER BY debut DESC LIMIT 1");
+                    my $requete="UPDATE ";
+                    #si on a trouve une ligne ==> update dans pppoe
+                    if ($reslt != "0E0")    { $requete.="pppoe SET peer='$ip' where pid_pppd=$2 and debut > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1";}
+                    #sinon c une fin de cnx vpn; on fait un guess que deux connexions vpn ont pas eu lieu dans les memes 5 secondes... 
+                    else                    { $requete.="vpn SET vpn_clt='$ip' where  pid_pppd=$2  and debut > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1";}
+ 	#		$requete.="SET peer='$ip' where pid_pppd=$2 and debut > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1";
+                     execute_sql_query($requete);
                      next;
                   }
 
+                  if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: local  IP address (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                     #$1: date $2:pid $3.$4.$5.$6:ip
+                     my $date=mkmysqldate($1);
+                     my $ip=ipdot2ipnum($3,$4,$5,$6);
+                    #faut faire un update, mais soit dans pppoe, soit dans vpn
+                    my $reslt=execute_sql_query("SELECT * FROM vpn WHERE debut > '$date' - interval 5 second  ORDER BY debut DESC LIMIT 1");
+                    my $requete="UPDATE ";
+                    #si on a trouve une ligne ==> update dans vpn
+    		    my $smedb=esmith::ConfigDB->open;
+		    my $localif = $smedb->get("LocalIP")->prop('type');
+                    print "IP IF local $localif - IP $3.$4.$5.$6  \n";
+		    if ($reslt != "0E0" && "$3.$4.$5.$6" eq $localif )   
+                                      { $requete.="vpn SET vpn_srv='$ip', pid_pppd=$2 WHERE  pid_pppd IS  NULL and  debut > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1";
+                     execute_sql_query($requete);}
+                     next;
+                  }
+
+
                 #VPN ip vpn_srv & pid_pptpd
-                #Jun 25 15:43:31 test pptpd[636]: CTRL: local address = 192.168.2.1
-                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: local address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
-                    #$1: date $2:pid $3.$4.$5.$6:ip
+                #old # Jun 25 15:43:31 test pptpd[636]: CTRL: local address = 192.168.2.1
+		#old: #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: local address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+		#Dec 15 15:59:13 atlas pptpd[19918]: CTRL: Client 24.14.190.157 control connection started
+		#Dec 15 15:59:13 atlas pptpd[19918]: CTRL: Starting call (launching pppd, opening GRE)
+		#Dec 15 15:59:13 atlas pppd[19919]: Plugin radius.so loaded.
+		#Dec 15 15:59:13 atlas pppd[19919]: RADIUS plugin initialized.
+		#Dec 15 15:59:13 atlas pppd[19919]: pppd 2.4.4 started by root, uid 0
+		#Dec 15 15:59:13 atlas pppd[19919]: Using interface ppp1
+		#Dec 15 15:59:13 atlas pppd[19919]: Connect: ppp1 <--> /dev/pts/5
+		#Dec 15 15:59:17 atlas pppd[19919]: MPPE 128-bit stateless compression enabled
+		#Dec 15 15:59:18 atlas pppd[19919]: found interface br0 for proxy arp
+		#Dec 15 15:59:18 atlas pppd[19919]: local  IP address 192.168.12.1
+                #Dec 15 15:59:18 atlas pppd[19919]: remote IP address 192.168.12.250
+		#Dec 15 15:59:18 atlas esmith::event[19939]: Processing event: ip-up.pptpd ppp1 /dev/pts/5 460800 192.168.12.1 192.168.12.250 pptpd
+		if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: Client (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) control connection started/o) {
+	    	    #$1: date $2:pid $3.$4.$5.$6:ip
                     my $date=mkmysqldate($1);
                     my $ip=ipdot2ipnum($3,$4,$5,$6);
-                    execute_sql_query("INSERT INTO vpn VALUES ('$date',null,null,null,null,$ip,null,null,null,$2,null)");
+                    execute_sql_query("INSERT INTO vpn VALUES ('$date',null,null,$ip,null,0,null,null,null,$2,null)");
                     next;
                 }
 
-                #VPN ip vpn_clt
-                #Jun 25 15:43:31 test pptpd[636]: CTRL: remote address =    192.168.2.250
-                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: remote address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
-                    #$1: date $2:pid $3.$4.$5.$6:ip
-                    my $date=mkmysqldate($1);
-                    my $ip=ipdot2ipnum($3,$4,$5,$6);
-                    execute_sql_query("UPDATE vpn SET vpn_clt=$ip where pid_pptpd=$2 and debut > '$date' - interval 5 second");
-                    next;
-                }
-                #VPN ip client
-                #Jun 25 15:43:31 test pptpd[636]: CTRL: Client 192.168.185.66 control connection started
-                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: Client (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) control connection started/o) {
-                    #$1: date $2:pid $3.$4.$5.$6:ip
-                    my $date=mkmysqldate($1);
-                    my $ip=ipdot2ipnum($3,$4,$5,$6);
-                    execute_sql_query("UPDATE vpn SET ip=$ip where pid_pptpd=$2 and debut > '$date' - interval 5 second");
-                    next;
-                }
+                ##VPN ip vpn_clt
+                ##Jun 25 15:43:31 test pptpd[636]: CTRL: remote address =    192.168.2.250
+		##Dec 15 15:27:33 atlas pppd[15747]: remote IP address 192.168.12.250
+                ##if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: remote address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                #    #$1: date $2:pid $3.$4.$5.$6:ip
+                #    my $date=mkmysqldate($1);
+                #    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                #    execute_sql_query("UPDATE vpn SET vpn_clt=$ip where pid_pptpd=$2 and debut > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1");
+                #    next;
+                #}
 
-                #VPN checkip pid_pppd
-                #Jun 25 15:43:33 test pptpd[637]: CTRL (PPPD Launcher): local address = 192.168.2.1
-                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL \(PPPD Launcher\): local address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
-                    #$1: date $2:pid !!! PPPD !!!    $3.$4.$5.$6:ip
-                    my $date=mkmysqldate($1);
-                    my $ip=ipdot2ipnum($3,$4,$5,$6);
-                    execute_sql_query("UPDATE vpn SET pid_pppd=$2 where vpn_srv=$ip and debut > '$date' - interval 5 second");
-                    next;
-                }
+                ##VPN ip client
+                ##Jun 25 15:43:31 test pptpd[636]: CTRL: Client 192.168.185.66 control connection started
+                #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL: Client (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) control connection started/o) {
+                #    #$1: date $2:pid $3.$4.$5.$6:ip
+                #    my $date=mkmysqldate($1);
+                #    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                #    execute_sql_query("UPDATE vpn SET ip=$ip where pid_pptpd=$2 and debut > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1");
+                #    next;
+                #}
 
-                #Deprecated !!! Dans sme7, l'auth se fait via Radius, qui ne loggue rien par dÃ©faut => pas moyen de connaitre simplement le login
-                #VPN login
-                #Jun 25 15:43:36 test pppd[637]: CHAP peer authentication succeeded for rv                                
-                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: CHAP peer authentication succeeded for ([0-9a-z-]+)/o) {
-                    #$1: date $2:pid $3:login
-                    my $date=mkmysqldate($1);
-                    execute_sql_query("UPDATE vpn SET login='$3' where pid_pppd=$2 and debut > '$date' - interval 20 second");
-                    next;
-                }
+                ##VPN checkip pid_pppd
+                ##Jun 25 15:43:33 test pptpd[637]: CTRL (PPPD Launcher): local address = 192.168.2.1
+		## does not exist anymore
+                #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pptpd\[(\d+)\]: CTRL \(PPPD Launcher\): local address = (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/o) {
+                #    #$1: date $2:pid !!! PPPD !!!    $3.$4.$5.$6:ip
+                #    my $date=mkmysqldate($1);
+                #    my $ip=ipdot2ipnum($3,$4,$5,$6);
+                #    execute_sql_query("UPDATE vpn SET pid_pppd=$2 where vpn_srv=$ip and debut > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1");
+                #    next;
+                #}
+
+                ##Deprecated !!! Dans sme7, l'auth se fait via Radius, qui ne loggue rien par défaut => pas moyen de connaitre simplement le login
+                ##VPN login
+                ##Jun 25 15:43:36 test pppd[637]: CHAP peer authentication succeeded for rv                                
+                #if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName pppd\[(\d+)\]: CHAP peer authentication succeeded for ([0-9a-z-]+)/o) {
+                #    #$1: date $2:pid $3:login
+                #    my $date=mkmysqldate($1);
+                #    execute_sql_query("UPDATE vpn SET login='$3' where pid_pppd=$2 and debut > '$date' - interval 20 second ORDER BY debut DESC LIMIT 1");
+                #    next;
+                #}
 
                 #PPPOE && VPN !!! temps de connexion 
                 #Jul 15 12:49:58 sas pppd[1878]: Connect time 1440.0 minutes.
@@ -746,7 +832,7 @@ sub parse_logs {
                     if ($reslt != "0E0")    { $requete.="pppoe ";}
                     #sinon c une fin de cnx vpn
                     else                    { $requete.="vpn ";}
-                    $requete.="SET duree=sec_to_time($3*60), fin='$date' where pid_pppd=$2";
+                    $requete.="SET duree=sec_to_time($3*60), fin='$date' where pid_pppd=$2 ORDER BY debut DESC LIMIT 1";
                     execute_sql_query($requete);
                     next;
                 }
@@ -764,15 +850,17 @@ sub parse_logs {
                     if ($reslt != "0E0")    { $requete.="pppoe ";}
                     #sinon c une fin de cnx vpn
                     else                    { $requete.="vpn ";}
-                    $requete.="SET volume_out=$3, volume_in=$4 where pid_pppd=$2 and fin > '$date' - interval 5 second";
-                    execute_sql_query($requete);
+                    $requete.="SET volume_out=$3, volume_in=$4 where pid_pppd=$2 and fin > '$date' - interval 5 second ORDER BY debut DESC LIMIT 1";
+                    
                     next;
                 }
             }
         }
-        # libÃ©ration du fichier de log courant, enregistrement de la position
+        # libération du fichier de log courant, enregistrement de la position
         tell_log("$logdir$nom", $fh);
     }
+
+    
     deconnectBD();
 }
 
@@ -835,33 +923,33 @@ sub samba_status {
 sub get_sensors_hddtemp {
     # $sensors_temp_cpu,$sensors_temp_hd,$sensors_temp_mb,$sensors_fan_speed
     #fan2:     3970 RPM  (min = 3000 RPM, div = 2)
-    #temp1:       +30Â°C  (limit =  +60Â°C)                       sensor = thermistor
-    #temp2:     +46.0Â°C  (limit =  +60Â°C, hysteresis =  +50Â°C) sensor = 3904 transistor
+    #temp1:       +30°C  (limit =  +60°C)                       sensor = thermistor
+    #temp2:     +46.0°C  (limit =  +60°C, hysteresis =  +50°C) sensor = 3904 transistor
 
     ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed)=('U','U','U','U','U');
 
     my ($tag1,$tag2,$tag3,$tag4,$tag5)=($params{'SensorsTag1'},$params{'SensorsTag2'},$params{'SensorsTagFan'},
         $params{'hd1'},$params{'hd2'}); 
 
-    #a noter que si hddtemp & lm_sensors n'ont pas ete installÃ©s,ca ne plante pas !!
+    #a noter que si hddtemp & lm_sensors n'ont pas ete installés,ca ne plante pas !!
     my @sensors=`/usr/bin/sensors -A 2> /dev/null`;
     foreach (@sensors) {
-        if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+)Â°C/o)) {$sensors_temp1=$2;}
-        if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+)Â°C/o)) {$sensors_temp2=$2;}
+        if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp1=$2;}
+        if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+)°C/o)) {$sensors_temp2=$2;}
         if ($tag3 ne "" && (/$tag3:\s+(\d+) RPM/o)) {$sensors_fan_speed=$1;}
     }
 
     if ($tag4 ne "") {
         my @hddtemp=`/usr/sbin/hddtemp /dev/$tag4 2> /dev/null`;
         foreach (@hddtemp) {
-            #/dev/hda: ExcelStor Technology J680 :  39Â°C ou Â°F
-            if (/\/dev\/$tag4:.*:\s+(\d+)Â°C/o) {$sensors_temp_hd1=$1;}
+            #/dev/hda: ExcelStor Technology J680 :  39°C ou °F
+            if (/\/dev\/$tag4:.*:\s+(\d+)°C/o) {$sensors_temp_hd1=$1;}
         }
     }
     if ($tag5 ne "") {
         my @hddtemp=`/usr/sbin/hddtemp /dev/$tag5 2> /dev/null`;
         foreach (@hddtemp) {
-            if (/\/dev\/$tag5:.*:\s+(\d+)Â°C/) {$sensors_temp_hd2=$1;}
+            if (/\/dev\/$tag5:.*:\s+(\d+)°C/) {$sensors_temp_hd2=$1;}
         }
     }
 }
@@ -1147,7 +1235,7 @@ sub mail_status {
 sub mail_alerte {
     my $pourc_hd_used = int(($hd_used/$hd_total)*100);
     #ici, on utilise un tableau d'alertes. (Je trouve ca plus elegant et plus extensible). Pour chacune, on a 
-    # - un test qui dÃ©clenche ou non l'alerte
+    # - un test qui déclenche ou non l'alerte
     # - le sujet du mail a envoyer
     # - une fonction inline qui renvoie le texte du mail
     my @tab_of_alerts=(

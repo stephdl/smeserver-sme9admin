@@ -10,7 +10,7 @@ service_link_enhanced("sme9admind", "K20", "1");
 
 # Links for the panel
 panel_link("sme9admin", "manager");
-#system("mkdir -p root/etc/e-smith/web/panels/manager/html/sme8admin");
+#system("mkdir -p root/etc/e-smith/web/panels/manager/html/sme9admin");
 safe_symlink("/etc/e-smith/web/panels/manager/html/sme9admin", "root/etc/e-smith/web/panels/user/html/sme9admin");
 
 # Logrotate

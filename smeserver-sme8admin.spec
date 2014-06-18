@@ -1,4 +1,4 @@
-# $Id: smeserver-sme8admin.spec,v 1.3 2012/09/10 00:47:40 unnilennium Exp $
+# $Id: smeserver-sme9admin.spec,v 1.4 2013/12/30 06:47:01 unnilennium Exp $
 # Authority: vip-ire
 # Name: Daniel Berteaud
 # 
@@ -7,12 +7,13 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 3
+%define release 1
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
-Source: %{name}-%{version}.tar.gz
+Source: %{name}-%{version}.tgz
+
 
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
@@ -21,18 +22,26 @@ BuildRequires: e-smith-devtools
 BuildRequires: gettext
 
 Requires: e-smith-base
-Requires: smeserver-release >= 9
+Requires: smeserver-release >= 8
 Requires: rrdtool-perl
 Requires: rrdtool
 Requires: hddtemp
 Requires: sysstat
 Requires: lm_sensors
+Obsoletes: smeserver-sme7admin
+Obsoletes: smeserver-sme6admin
 
 AutoReqProv: no
 
 %changelog
-* Wed Jun 04 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.5-3
-- Initial release to SME Server 9
+* Wed Jun 18 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.5.-1
+- initial release to sme9
+
+* Sun Dec 15 2013 JP Pialasse <test@pialasse.com> 1.3-4.sme
+- fix obsolete missing [SME: 7109]
+- fix pppoe and vpn loging [SME: 8061]
+- added monthly ppoe log  
+- fix stop on mysql error too many connections [SME: 7683]  
 
 * Sun Sep 09 2012 JP Pialasse <test@pialasse.com> 1.3-3.sme
 - startup fix [SME 3022]
@@ -57,7 +66,6 @@ This contrib is a bit inspired by e-smith-sysmon from Shad Lords.
 
 %prep
 %setup
-
 
 %build
 perl createlinks
@@ -86,17 +94,6 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %post
-
-if [ $1 -eq 1 ]
-then
-   
-   if [ -d /var/lib/sme8admin ] && [ -d /var/lib/mysql/sme8admin/ ] 
-   then
-        echo "After post-upgrade and reboot, you may  safely remove sme8admin, as datas will be migrated to sme9admin."
-        echo "Execute 'rpm -e smeserver-sme8admin' and maybe 'mysqladmin drop sme8admin' and 'rm -Rf /var/lib/sme8admin' to completely remove sme8admin."
-   fi
-
-fi
 
 %postun
 

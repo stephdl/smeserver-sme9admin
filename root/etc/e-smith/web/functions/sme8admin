@@ -1,11 +1,11 @@
 #!/usr/bin/perl -w
-# Sme9admin - panel cgi perl affichant les infos dans le server-manager
+# Sme8admin - panel cgi perl affichant les infos dans le server-manager
 # Copyright (C) 2006
 # This file is distributed under the GPL license.
 # Landry Breuil <landry@firewall-services.com>, 2006.
 
 # heading : Administration
-# description : Sme9admin 
+# description : Sme8admin 
 # navigation : 4000 4020 
 
 
@@ -282,11 +282,11 @@ sub accueil
                     "#".gettext("Administrative services"), "sshd", "sme9admind",
                     "#".gettext("Network services"),"wan","dhcpd","pptpd","ippp", 
                     "#".gettext("File-sharing services"),"smb","smbd","nmbd","ftp", 
-                    "#".gettext("E-mail services"),"pop3","pop3s","dovecot","qmail","qpsmtpd","sqpsmtpd", "clamd", "freshclam","spamd",#mail
+                    "#".gettext("E-mail services"),"pop3","pop3s","imap","imaps","qmail","qpsmtpd","sqpsmtpd", "clamd", "freshclam","spamd",#mail
                     "#".gettext("DNS services"),"tinydns","dnscache", #dns
                     "#".gettext("Authentication services"),"oidentd","ldap","smtp-auth-proxy","radiusd", #auth
                     "#".gettext("Misc. services"),"mysqld","ntpd","lpd", #misc
-                    "#".gettext("System services"),"crond","rsyslog","ulogd","acpid","raidmonitor"); #sys et materiel
+                    "#".gettext("System services"),"crond","syslog","ulogd","acpid","raidmonitor"); #sys et materiel
 
     #hack pour la mise en forme : a) debut 1er case a gauche
     print $q->start_table,$q->start_Tr,$q->start_td;
@@ -322,14 +322,14 @@ sub accueil
     		    # workaround to see db config status
     		    my $dbstatus="not defined";
     		    if ( length(`/sbin/e-smith/db configuration show $svc`) > 1 )
-		    {$dbstatus=$smedb->get("$svc")->prop('status');} # trouver un moyen de verifier que le nom du service est bien trouvÃ© dans liste
+		    {$dbstatus=$smedb->get("$svc")->prop('status');} # trouver un moyen de verifier que le nom du service est bien trouvé dans liste
 		    else
 		    {$dbstatus="";	}    
 		    #print "$svc :".length(`/sbin/e-smith/db configuration show $svc`)."<br>";
 	
 	    		#print $q->p($_);
 		    	#MATCHE:
-			#proftpd est arrÃªtÃ©
+			#proftpd est arrêté
     			#/service/pppoe: down 1232017 seconds
 	    		#proftpd is stopped
             		#Warning !! Only on sme6
@@ -346,7 +346,7 @@ sub accueil
 			
     			#MATCHE:
                 #/service/raidmonitor: run (pid 1629) 5747 seconds, normally down
-                #clamd (pid 2221) en cours d'exÃ©cution...
+                #clamd (pid 2221) en cours d'exécution...
 			    #atalkd (pid 6445) is running...
                 #Warning !! Only on sme6
 	    		#/service/popd: up (pid 22340) 101687 seconds, normally down
@@ -492,7 +492,7 @@ sub showConf
 	print $q->i($q->p(gettext("Web panel configuration.\n"))),
         	$q->p(gettext("You can set the format and size of graphs, and the bounds upon which pppoe and vpn connections need to be highlighted.\n")),$q->br,
         	$q->start_table,
-            #vieux hack pour rÃ©cuperer la css du NameValueRow
+            #vieux hack pour récuperer la css du NameValueRow
             #	esmith::cgi::genNameValueRow($q,gettext("Format d'image (PNG/GIF)"),'img_format',$params{'img_format'}),
            $q->Tr ($q->td ({-class => "sme-noborders-label"},"Format d'image:"),"\n",
                     $q->td($q->popup_menu(-name=>'ImgFormat', -values=>['PNG','GIF'], -default=>$params{'ImgFormat'}))),
@@ -749,7 +749,7 @@ sub svcControl
 #Tests de connexion aux services de SME
 sub showAdvancedTest
 {
-	#affichage de la liste des tests si le param 'service' n'est pas dÃ©fini.
+	#affichage de la liste des tests si le param 'service' n'est pas défini.
 	if (!defined($q->param('service')))
 	{
 		print $q->p(gettext("These differents tests may produce false positives, do not take care of them.")),
@@ -1044,6 +1044,106 @@ sub showDhcpd
 #details du service pppoe
 sub showPppoe
 {
+# get first db entry
+my $requete="SELECT substr(debut,1,4), substr(debut,6,2)  FROM pppoe ORDER BY debut ASC LIMIT 1";
+
+    #connexion a la base de donnees mySQL
+        connectBD();
+        #recuperation des donnees
+        my $rq=$bd->prepare($requete) or print $q->p(sprintf(gettext("MySQL error : Impossible to prepare SQL query \"%s\" : %s\n"),$requete,$bd->errstr));
+        $rq->execute or print $q->p(sprintf(gettext("MySQL error : Can't execute query : %s\n"),$rq->errstr));
+        
+	my @debut = $rq->fetchrow_array();
+# get first db entry
+my $requete="SELECT substr(fin,1,4), substr(fin,6,2)  FROM pppoe ORDER BY debut DESC LIMIT 1";
+
+    #connexion a la base de donnees mySQL
+        connectBD();
+        #recuperation des donnees
+        my $rq=$bd->prepare($requete) or print $q->p(sprintf(gettext("MySQL error : Impossible to prepare SQL query \"%s\" : %s\n"),$requete,$bd->errstr));
+        $rq->execute or print $q->p(sprintf(gettext("MySQL error : Can't execute query : %s\n"),$rq->errstr));
+
+        my @fin = $rq->fetchrow_array();
+ 
+	my $end_yymm = $debut[0].$debut[1];
+	my $yymm = $fin[0].$fin[1];
+	my $startMonth  = $debut[1];
+	my $startYear = $debut[0];
+	my $endMonth; 
+	my $endYear;
+	my $preMonth;
+	my $preYear; 
+	my $i=0;
+
+print $q->p(gettext("Traffic by Month"));
+    print                    $q->start_table({-border=>'1'}),
+                       $q->start_Tr;
+        print $q->th(gettext("year-month"));
+        print $q->th(gettext("IN (GB)"));
+        print $q->th(gettext("OUT (GB)"));
+        print $q->th(gettext("TOTAL (GB)"));
+         $q->end_Tr;
+
+    while ($end_yymm < $yymm) {
+
+    if ($startMonth eq '12') {
+        $endMonth = 1;
+        $endYear = $startYear + 1;
+    } else {
+      $endMonth = $startMonth + 1;
+      $endYear = $startYear;
+    }
+    ## Now that you have the end year and month incremented setup the end_yymm variable again to be picked up in the while statement:
+    $end_yymm = $startYear . ${\(length($startMonth) == 1 ? '0' : '')} . $startMonth;
+
+	if ($startMonth eq '1') {
+		$preMonth=12;
+		$preYear=$startYear-1;
+	}
+	else {
+		$preMonth=$startMonth-1;
+		$preYear= $startYear;
+	}
+     # ...... carry on with the rest of your code
+#    print "**$end_yymm<br>\n";
+
+	 $requete="SELECT substring(`fin`,1,7) as 'month', 
+round(SUM(`volume_in`)/1024/1024/1024,3) as 'In (Go)' , 
+round(SUM(`volume_out`) /1024/1024/1024,3)  as 'Out (Go)' , 
+round(SUM(`volume_in` + `volume_out`)/1024/1024/1024,3) as 'Total (Go)' , 
+SUM(TIME_TO_SEC(`duree`))/3600/24 as 'duree'
+FROM `pppoe` WHERE
+# mois
+(`debut`> '$startYear-$startMonth-01 00:00:00' and `fin`< '$endYear-$endMonth-01 00:00:00')
+# bordure
+or ( `debut`> '$preYear-$preMonth-01 00:00:00' and `debut`< '$startYear-$startMonth-01 00:00:00' and `fin`> '$startYear-$startMonth-01 00:00:00')
+or ( `debut`< '$endYear-$endMonth-01 00:00:00' and `fin`> '$endYear-$endMonth-01 00:00:00' and `fin`< '$endYear-$endMonth-28 00:00:00')";
+
+        my $rq=$bd->prepare($requete) or print $q->p(sprintf(gettext("MySQL error : Impossible to prepare SQL query \"%s\" : %s\n"),$requete,$bd->errstr));
+        $rq->execute or print $q->p(sprintf(gettext("MySQL error : Can't execute query : %s\n"),$rq->errstr));
+	
+my @ligne = $rq->fetchrow_array();
+print                        $q->start_Tr;
+ print $q->td("$startYear-". ${\(length($startMonth) == 1 ? '0' : '')} ."$startMonth");
+ print $q->td($ligne[1]);
+ print $q->td($ligne[2]);
+ print $q->td($ligne[3]);
+ print $q->end_Tr;
+
+	# get ready for next loop
+    if ($startMonth eq '12') {
+       $startMonth = 1;
+       $startYear++;
+    } else {
+       $startMonth++
+    }
+
+    } # end the while loop	
+print $q->end_table;
+
+deconnectBD();
+
+
     showDbData( [
                     [gettext("Start"),],
                     [gettext("End"),],
@@ -1147,7 +1247,7 @@ sub showDbData
         print $q->table($q->Tr($q->td(gettext("Connections which lasted ")),
 			$q->td({bgcolor=>"#FF4444"},sprintf(gettext("more than %s hours are highlighted.\n"),$params{'LimitVpnDuration'}))));
     }
-    elsif ($q->param('service') eq 'pppoe')
+    elsif ($q->param('service') eq 'wan'|| $q->param('service') eq 'pppoe' )
     {
         print $q->table($q->Tr($q->td(gettext("Connections which lasted ")),
 			$q->td({bgcolor=>"#FF4444"},sprintf(gettext("less than %s hours are highlighted.\n"),$params{'LimitPppoeDuration'})))),
@@ -1185,7 +1285,7 @@ sub showDbData
 		    #si le nb d'heure > limite, surbrillance
 		    print $q->start_Tr({bgcolor=>(($1 >= $params{'LimitVpnDuration'})?"#FF4444":"#FFFFFF")});
         }
-        elsif ($q->param('service') eq 'pppoe')
+        elsif ($q->param('service') eq 'wan' || $q->param('service') eq 'pppoe')
         {
 		    #on interroge la bd pour voir si il y a eu une longue deconnexion
     		#(beaucoup plus simple que de parser les 2 dates et faire une difference, la on utilise la possibilite de calcul de diff de dates de MySQL)
@@ -1274,7 +1374,7 @@ sub showHardGraph
     print $q->p($q->a ({href => "$progname"},gettext("Back\n")));
     
 	my @tab=("--title=".gettext("Temperatures"),
-		"--vertical-label=TÂ°C",
+		"--vertical-label=T°C",
 		"--start=$start",
 		"DEF:t1=$rrddir/sensors.rrd:t1:AVERAGE",    "DEF:maxt1=$rrddir/sensors.rrd:t1:MAX", "DEF:mint1=$rrddir/sensors.rrd:t1:MIN",
 		"DEF:t2=$rrddir/sensors.rrd:t2:AVERAGE",    "DEF:maxt2=$rrddir/sensors.rrd:t2:MAX",	"DEF:mint2=$rrddir/sensors.rrd:t2:MIN",
@@ -1283,14 +1383,14 @@ sub showHardGraph
     push @tab, "DEF:thd2=$rrddir/sensors.rrd:thd2:AVERAGE",	"DEF:maxthd2=$rrddir/sensors.rrd:thd2:MAX",	"DEF:minthd2=$rrddir/sensors.rrd:thd2:MIN" if ($has_second_hd);
     push @tab, "COMMENT:    ",     "LINE2:t1#1000FF:Temp 1 ",      "LINE2:t2#00EEBB:Temp 2 ",	    "LINE2:thd1#CC5500:Temp hd 1 ";
     push @tab, "LINE2:thd2#550000:Temp hd 2" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf Â°C",	"GPRINT:maxt2:MAX:%5.2lf Â°C  ",	"GPRINT:maxthd1:MAX:%5.2lf Â°C     ";
-    push @tab, "GPRINT:maxthd2:MAX:%5.2lf Â°C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Min\\: ",	"GPRINT:mint1:MIN:%5.2lf Â°C",	"GPRINT:mint2:MIN:%5.2lf Â°C  ",	"GPRINT:minthd1:MIN:%5.2lf Â°C     ";
-    push @tab, "GPRINT:minthd2:MIN:%5.2lf Â°C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Avg\\: ",	"GPRINT:t1:AVERAGE:%5.2lf Â°C",	"GPRINT:t2:AVERAGE:%5.2lf Â°C  ","GPRINT:thd1:AVERAGE:%5.2lf Â°C     ";
-    push @tab, "GPRINT:thd2:AVERAGE:%5.2lf Â°C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Last\\:",	"GPRINT:t1:LAST:%5.2lf Â°C",	    "GPRINT:t2:LAST:%5.2lf Â°C  ",	"GPRINT:thd1:LAST:%5.2lf Â°C     ";
-    push @tab, "GPRINT:thd2:LAST:%5.2lf Â°C" if ($has_second_hd);
+    push @tab, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf °C",	"GPRINT:maxt2:MAX:%5.2lf °C  ",	"GPRINT:maxthd1:MAX:%5.2lf °C     ";
+    push @tab, "GPRINT:maxthd2:MAX:%5.2lf °C" if ($has_second_hd);
+    push @tab, "COMMENT:\\n", "COMMENT:Min\\: ",	"GPRINT:mint1:MIN:%5.2lf °C",	"GPRINT:mint2:MIN:%5.2lf °C  ",	"GPRINT:minthd1:MIN:%5.2lf °C     ";
+    push @tab, "GPRINT:minthd2:MIN:%5.2lf °C" if ($has_second_hd);
+    push @tab, "COMMENT:\\n", "COMMENT:Avg\\: ",	"GPRINT:t1:AVERAGE:%5.2lf °C",	"GPRINT:t2:AVERAGE:%5.2lf °C  ","GPRINT:thd1:AVERAGE:%5.2lf °C     ";
+    push @tab, "GPRINT:thd2:AVERAGE:%5.2lf °C" if ($has_second_hd);
+    push @tab, "COMMENT:\\n", "COMMENT:Last\\:",	"GPRINT:t1:LAST:%5.2lf °C",	    "GPRINT:t2:LAST:%5.2lf °C  ",	"GPRINT:thd1:LAST:%5.2lf °C     ";
+    push @tab, "GPRINT:thd2:LAST:%5.2lf °C" if ($has_second_hd);
     push @tab, "COMMENT:\\n";
     
     #creation du graphe des temperatures
@@ -1405,7 +1505,7 @@ sub showNetGraph
 		"COMMENT:Last\\:",'GPRINT:bin:LAST:%8.2lf %sb/s','GPRINT:bout:LAST:%8.2lf %sb/s',"COMMENT:\\n");
 
     #si on a une 2e interface reseay
-    if ( defined $ExternalInterface )
+    if ($ExternalInterface ne "")
     {
 	    #trafic sur l'interface cote reseau externe	
 	    createShowGraph(gettext("Load on the external network interface (to internet)."),"if_ext",
