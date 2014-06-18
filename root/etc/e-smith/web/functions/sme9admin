@@ -282,9 +282,9 @@ sub accueil
                     "#".gettext("Administrative services"), "sshd", "sme9admind",
                     "#".gettext("Network services"),"wan","dhcpd","pptpd","ippp", 
                     "#".gettext("File-sharing services"),"smb","smbd","nmbd","proftpd", 
-                    "#".gettext("E-mail services"),"pop3","pop3s","dovecot","qmail","qpsmtpd","sqpsmtpd", "clamd", "freshclam","spamd",#mail
+                    "#".gettext("E-mail services"),"pop3","pop3s","imaps","imap","dovecot","qmail","qpsmtpd","sqpsmtpd", "clamd", "freshclam","spamd",#mail
                     "#".gettext("DNS services"),"tinydns","dnscache", #dns
-                    "#".gettext("Authentication services"),"identd","ldap","smtp-auth-proxy","radiusd", #auth
+                    "#".gettext("Authentication services"),"oidentd","identd","ldap","smtp-auth-proxy","radiusd", #auth
                     "#".gettext("Misc. services"),"mysqld","ntpd","lpd", #misc
                     "#".gettext("System services"),"crond","rsyslog","ulogd","acpid","raidmonitor"); #sys et materiel
 
