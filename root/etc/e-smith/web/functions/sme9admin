@@ -1374,26 +1374,25 @@ sub showHardGraph
     
     print $q->p($q->a ({href => "$progname"},gettext("Back\n")));
     
-        my @tab=("--title=".gettext("Temperatures"),
-                "--vertical-label=T°C",
-                "--start=$start",
-                "DEF:t1=$rrddir/sensors.rrd:t1:AVERAGE",    "DEF:maxt1=$rrddir/sensors.rrd:t1:MAX", "DEF:mint1=$rrddir/sensors.rrd:t1:MIN",
-                "DEF:t2=$rrddir/sensors.rrd:t2:AVERAGE",    "DEF:maxt2=$rrddir/sensors.rrd:t2:MAX",     "DEF:mint2=$rrddir/sensors.rrd:t2:MIN",
-                "DEF:thd1=$rrddir/sensors.rrd:thd1:AVERAGE",    "DEF:maxthd1=$rrddir/sensors.rrd:thd1:MAX",     "DEF:minthd1=$rrddir/sensors.rrd:thd1:MIN");
+	my @tab=("--title=".gettext("Temperatures"),
+		"--vertical-label=T°C",
+		"--start=$start",
+		"DEF:t1=$rrddir/sensors.rrd:t1:AVERAGE",    "DEF:maxt1=$rrddir/sensors.rrd:t1:MAX", "DEF:mint1=$rrddir/sensors.rrd:t1:MIN",
+		"DEF:t2=$rrddir/sensors.rrd:t2:AVERAGE",    "DEF:maxt2=$rrddir/sensors.rrd:t2:MAX",	"DEF:mint2=$rrddir/sensors.rrd:t2:MIN",
+		"DEF:thd1=$rrddir/sensors.rrd:thd1:AVERAGE",    "DEF:maxthd1=$rrddir/sensors.rrd:thd1:MAX",	"DEF:minthd1=$rrddir/sensors.rrd:thd1:MIN");
 
-    push @tab, "DEF:thd2=$rrddir/sensors.rrd:thd2:AVERAGE",     "DEF:maxthd2=$rrddir/sensors.rrd:thd2:MAX",     "DEF:minthd2=$rrddir/sensors.rrd:thd2:MIN" if ($has_second_hd);
-    push @tab, "COMMENT:    ",     "LINE2:t1#1000FF:Temp 1 ",	   "LINE2:t2#00EEBB:Temp 2 ",       "LINE2:thd1#CC5500:Temp hd 1 ";
+    push @tab, "DEF:thd2=$rrddir/sensors.rrd:thd2:AVERAGE",	"DEF:maxthd2=$rrddir/sensors.rrd:thd2:MAX",	"DEF:minthd2=$rrddir/sensors.rrd:thd2:MIN" if ($has_second_hd);
+    push @tab, "COMMENT:    ",     "LINE2:t1#1000FF:Temp 1 ",      "LINE2:t2#00EEBB:Temp 2 ",	    "LINE2:thd1#CC5500:Temp hd 1 ";
     push @tab, "LINE2:thd2#550000:Temp hd 2" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf °C",	"GPRINT:maxt2:MAX:%5.2lf °C  ", "GPRINT:maxthd1:MAX:%5.2lf °C     ";
+    push @tab, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf °C",	"GPRINT:maxt2:MAX:%5.2lf °C  ",	"GPRINT:maxthd1:MAX:%5.2lf °C     ";
     push @tab, "GPRINT:maxthd2:MAX:%5.2lf °C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Min\\: ",        "GPRINT:mint1:MIN:%5.2lf °C",   "GPRINT:mint2:MIN:%5.2lf °C  ", "GPRINT:minthd1:MIN:%5.2lf °C     ";
+    push @tab, "COMMENT:\\n", "COMMENT:Min\\: ",	"GPRINT:mint1:MIN:%5.2lf °C",	"GPRINT:mint2:MIN:%5.2lf °C  ",	"GPRINT:minthd1:MIN:%5.2lf °C     ";
     push @tab, "GPRINT:minthd2:MIN:%5.2lf °C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Avg\\: ",        "GPRINT:t1:AVERAGE:%5.2lf °C",  "GPRINT:t2:AVERAGE:%5.2lf °C  ","GPRINT:thd1:AVERAGE:%5.2lf °C     ";
+    push @tab, "COMMENT:\\n", "COMMENT:Avg\\: ",	"GPRINT:t1:AVERAGE:%5.2lf °C",	"GPRINT:t2:AVERAGE:%5.2lf °C  ","GPRINT:thd1:AVERAGE:%5.2lf °C     ";
     push @tab, "GPRINT:thd2:AVERAGE:%5.2lf °C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Last\\:",        "GPRINT:t1:LAST:%5.2lf °C",         "GPRINT:t2:LAST:%5.2lf °C  ",	"GPRINT:thd1:LAST:%5.2lf °C     ";
+    push @tab, "COMMENT:\\n", "COMMENT:Last\\:",	"GPRINT:t1:LAST:%5.2lf °C",	    "GPRINT:t2:LAST:%5.2lf °C  ",	"GPRINT:thd1:LAST:%5.2lf °C     ";
     push @tab, "GPRINT:thd2:LAST:%5.2lf °C" if ($has_second_hd);
     push @tab, "COMMENT:\\n";
-
     
     #creation du graphe des temperatures
 	createShowGraph(gettext("Hardware temperatures (Processor, motherboard, hard disks)."),"temperature",@tab);
