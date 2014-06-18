@@ -12,7 +12,7 @@ Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
-Source: %{name}-%{version}.tgz
+Source: %{name}-%{version}.tar.gz
 
 
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
