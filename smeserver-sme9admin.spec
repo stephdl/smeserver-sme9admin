@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 1
+%define release 4
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL

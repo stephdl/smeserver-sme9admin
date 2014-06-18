@@ -286,7 +286,7 @@ sub accueil
                     "#".gettext("DNS services"),"tinydns","dnscache", #dns
                     "#".gettext("Authentication services"),"oidentd","ldap","smtp-auth-proxy","radiusd", #auth
                     "#".gettext("Misc. services"),"mysqld","ntpd","lpd", #misc
-                    "#".gettext("System services"),"crond","syslog","ulogd","acpid","raidmonitor"); #sys et materiel
+                    "#".gettext("System services"),"crond","rsyslog","ulogd","acpid","raidmonitor"); #sys et materiel
 
     #hack pour la mise en forme : a) debut 1er case a gauche
     print $q->start_table,$q->start_Tr,$q->start_td;
@@ -447,6 +447,7 @@ sub readConf
    	}
 	else{
 		$ExternalIP = '';
+		$ExternalInterface ='';
 	}
 	$InternalIP = $smedb->get("LocalIP")->value;
 
