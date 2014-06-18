@@ -14,7 +14,6 @@ License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
 
-
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
 
@@ -33,8 +32,8 @@ Obsoletes: smeserver-sme8admin
 AutoReqProv: no
 
 %changelog
-* Wed Jun 18 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.5.-1
-- initial release to sme9
+* Wed Jun 18 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-1.sme
+- Initial release to sme9
 
 * Sun Dec 15 2013 JP Pialasse <test@pialasse.com> 1.3-4.sme
 - fix obsolete missing [SME: 7109]

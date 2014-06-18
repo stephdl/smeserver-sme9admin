@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # mysql
-if [ -d /var/lib/mysql/sme8admin ] && [ ! -d /var/lib/mysql/sme9admin ]; then
-    echo "Migrating existing sme8admin MySQL database."
+if [ -d /var/lib/mysql/sme9admin ] && [ ! -d /var/lib/mysql/sme9admin ]; then
+    echo "Migrating existing sme9admin MySQL database."
     mysqladmin create sme9admin
-    mysqldump sme8admin | mysql sme9admin
+    mysqldump sme9admin | mysql sme9admin
     PASS=$(/sbin/e-smith/db configuration getprop sme9admind DbPassword)
     mysql -e " grant all privileges on sme9admin.* to 'sme9admin'@'localhost' identified by '$PASS'"
     mysqladmin flush-privileges
@@ -17,9 +17,9 @@ else
 fi
 
 # rrd
-if [ -d /var/lib/sme8admin ] && [ ! -d /var/lib/sme9admin ]; then
+if [ -d /var/lib/sme9admin ] && [ ! -d /var/lib/sme9admin ]; then
     echo "Migrating existing sme6admin RRDs files."
-    cp -vr /var/lib/sme8admin /var/lib/sme9admin
+    cp -vr /var/lib/sme9admin /var/lib/sme9admin
 elif [ -d /var/lib/sme9admin ]; then
     # c'est une upgrade, rien de particulier a faire
     echo ''

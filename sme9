@@ -1,0 +1,18 @@
+#!/bin/bash
+find . -name "*" -type f -exec sed -i "s/Sme9admin/Sme9admin/g" {} \;
+find . -name "*" -type f -exec sed -i "s/sme9admin/sme9admin/g" {} \;
+find . -name "*" -type f -exec sed -i "s/sme9admin/sme9admin/g" {} \;
+
+mv ./root/etc/e-smith/db/configuration/migrate/sme9admin ./root/etc/e-smith/db/configuration/migrate/sme9admin
+mv ./root/etc/e-smith/sql/init/sme9admin ./root/etc/e-smith/sql/init/sme9admin
+mv ./root/etc/e-smith/web/functions/sme9admin ./root/etc/e-smith/web/functions/sme9admin
+mv smeserver-sme9admin.spec smeserver-sme9admin.spec
+for i in $(ls -d ./po/*); do mv $i/sme9admin.po $i/sme9admin.po ; done
+mv ./root/etc/rc.d/init.d/sme9admind ./root/etc/rc.d/init.d/sme9admind
+
+mv ./root/etc/e-smith/db/configuration/defaults/sme9admind ./root/etc/e-smith/db/configuration/defaults/sme9admind
+mv ./root/etc/e-smith/events/actions/sme9admin-parselog ./root/etc/e-smith/events/actions/sme9admin-parselog
+mv ./root/usr/share/doc/smeserver-sme9admin/sme9admin-doc-fr.html ./root/usr/share/doc/smeserver-sme9admin/sme9admin-doc-fr.html
+mv ./root/usr/share/doc/smeserver-sme9admin/sme9admin-doc-en.html ./root/usr/share/doc/smeserver-sme9admin/sme9admin-doc-en.html
+mv ./root/usr/bin/sme9admind ./root/usr/bin/sme9admind
+
