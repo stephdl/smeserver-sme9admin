@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# Sme8admin - evenement appele par logrotate
+# Sme9admin - evenement appele par logrotate
 # Copyright (C) 2006
 # This file is distributed under the GPL license.
 # Landry Breuil <landry@firewall-services.com>, 2006.

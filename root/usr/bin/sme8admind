@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# Sme8admin - demon perl collectant les statistiques du systeme
+# Sme9admin - demon perl collectant les statistiques du systeme
 # Copyright (C) 2006
 # This file is distributed under the GPL license.
 # Landry Breuil <landry@firewall-services.com>, 2006.
@@ -175,7 +175,7 @@ if (-e $lockfile)
     my $test=`/bin/ps -e | /bin/grep $oldPID | /usr/bin/rev | /bin/cut -c1-10 | /usr/bin/rev|tr -d '\n'`;
     if  ( $test  eq "sme9admind")
         {
-        print "Sme8admind is currently running, with the PID present in its PID file($oldPID).\n";
+        print "Sme9admind is currently running, with the PID present in its PID file($oldPID).\n";
         print "Try 'pgrep sme9admin' to see if the daemon crashed, kill it, then exec 'rm -f $lockfile' before restarting daemon.\n";
         exit 1;
         }

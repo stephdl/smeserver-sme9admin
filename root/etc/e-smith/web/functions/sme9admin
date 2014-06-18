@@ -1,11 +1,11 @@
 #!/usr/bin/perl -w
-# Sme8admin - panel cgi perl affichant les infos dans le server-manager
+# Sme9admin - panel cgi perl affichant les infos dans le server-manager
 # Copyright (C) 2006
 # This file is distributed under the GPL license.
 # Landry Breuil <landry@firewall-services.com>, 2006.
 
 # heading : Administration
-# description : Sme8admin 
+# description : Sme9admin 
 # navigation : 4000 4020 
 
 

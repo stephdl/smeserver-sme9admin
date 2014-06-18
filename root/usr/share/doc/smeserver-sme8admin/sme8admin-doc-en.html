@@ -8,25 +8,25 @@
 <link rel="stylesheet" type="text/css" href="/server-common/css/sme_core.css" />
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 
-<title> Documentation Sme8admin </title>
+<title> Documentation Sme9admin </title>
 </head>
 <body>
 
-<h3> Documentation Sme8admin </h3>
+<h3> Documentation Sme9admin </h3>
 <p>
 <b> Author :</b> Landry Breuil <br />
 <b> Creation date of this doc :</b> 30/01/2006 <br />
-<b> Corresponding version of Sme8admin :</b> 1.1.0-1 <br />
+<b> Corresponding version of Sme9admin :</b> 1.1.0-1 <br />
 <b> Sme6admin was tested with SME :</b> 7b5, 7pre1<br />
 
 <p><i> Why this contrib ? </i>:
-<br />The aim is to see globally what happens on the server, without using the administrative ssh shell. The homepage of the contrib is in the SME server-manager, in the tab <code>Sme8admin</code>. This contrib is an evolution of sme6admin for SME7, and has been mostly rewritten.
+<br />The aim is to see globally what happens on the server, without using the administrative ssh shell. The homepage of the contrib is in the SME server-manager, in the tab <code>Sme9admin</code>. This contrib is an evolution of sme6admin for SME7, and has been mostly rewritten.
 </p>
 <p><i> Description of the different pages </i>:
 <ul>
    <li />List of the informations provided by the main page of the contrib :
    <ul>
-      <li />Some links to the pages containings the graphs (see below), and a link to the configuration page of Sme8admin.
+      <li />Some links to the pages containings the graphs (see below), and a link to the configuration page of Sme9admin.
       <li />The result of the command <code>netstat</code> which permits to see the opened tcp connexions on the server. The outgoing/incoming connexions are highlighted. 
       <li />The result of the command <code>w</code> which permits to see the list of the users connected to a shell on the server, from where, since when, and what was their last command.
       <li />The status of the main services running on the server, with the associated number of unix processes. The right button allows to stop/start a service. (it corresponds to the command <code> service xxx stop/start </code>)
@@ -40,7 +40,7 @@
    <ul>
       <li />A graph with the temperatures of the cpu and motherboard, detected by lm_sensors, and those of the hard disks, detected by hddtemp.
       <li />A graph with the cpu fan speed.
-      <br />(You must notice that these values depends entirely of the support of your hardware by lm_sensors and hddtemp. You have to CONFIGURE correctly Sme8admin first if you want the graphs to fill.)
+      <br />(You must notice that these values depends entirely of the support of your hardware by lm_sensors and hddtemp. You have to CONFIGURE correctly Sme9admin first if you want the graphs to fill.)
       <br />You can have these graphs on various durations, following the links on top of the page.
    </ul>
 
@@ -49,7 +49,7 @@
    <ul>
       <li />A graph on the opened network sessions. It monitors the ftp, ssh, netbios, afp and vpn connexions. Theses curves corresponds to the number of opened tcp connexions on the ports 21,22,139,548 and 1723.
       <li />A graph with the number of dhcp leases renewal and samba connexions. It permits to view the local network activity. The samba connexions differs from the netbios connexions here because a client host can be connected simultaneously to many samba shares, this makes only one netbios connexion and many samba "connexions".
-      <li />A graph with the amount of incoming/outgoing e-mails on the server (the values are stacked). By default, it only counts the e-mails accounts of the server's main domain, the virtual domains, and the e-mails fetched by fetchmail on local mailboxes. You can add domains and e-mail adresses by configuring Sme8admin, but only the mails passing through SME's e-mail server will be counted. There is also the number of rejected spam by Spamassassin and the number of viruses filtered by ClamAV.
+      <li />A graph with the amount of incoming/outgoing e-mails on the server (the values are stacked). By default, it only counts the e-mails accounts of the server's main domain, the virtual domains, and the e-mails fetched by fetchmail on local mailboxes. You can add domains and e-mail adresses by configuring Sme9admin, but only the mails passing through SME's e-mail server will be counted. There is also the number of rejected spam by Spamassassin and the number of viruses filtered by ClamAV.
       <li />A graph showing the ping latency with the default gateway to internet. The ping target is configurable, as it may be useful if you are not directly on the web (ie. in <code>server-only</code> mode) to test the latency on an external host. If the ping is greater than 200ms, the value is bounded to have a readable graph. (If you had a 4s ping latency, you would have had a peak on the graph and nothing around.)
       <li />Two graphs with the amount of raw network flow on the server. Frequently, the amount of data incoming on the external network interface corresponds to the outgoing data on the internal network interface, it is flow relayed by the server to the local network. On the third graph you can see the amount of data which is not a relayed flow. If the server is in <code>server-only</code> mode, only one graph is displayed, as you have only one NIC.
    </ul>
@@ -73,7 +73,7 @@
 
    <br />
    <br />
-   <li />Configuration page of Sme8admin :
+   <li />Configuration page of Sme9admin :
    <br />This last page permits to configure the <code>sme9admind</code> daemon, and to set some web interface settings. The configuration is saved in a plain-text file. The settings are :
    <ul>
    <li /> Recipient and frequency of status e-mails. If you put 0 for the frequency, status e-mails are disabled.
@@ -101,7 +101,7 @@
    <br />
    <br />
    <li />Details page on pppoe service :
-   <br />It shows the history of the ADSL connexions, with the start, end, duration, ip assigned and amount of data transferred. Connexions which lasted less than 4 hours, and disconnexions that lasted more than one minute are highlighted. These two parameters can be changed in the configuration page of Sme8admin. Thus, you can see the reliability/stability of the internet link.
+   <br />It shows the history of the ADSL connexions, with the start, end, duration, ip assigned and amount of data transferred. Connexions which lasted less than 4 hours, and disconnexions that lasted more than one minute are highlighted. These two parameters can be changed in the configuration page of Sme9admin. Thus, you can see the reliability/stability of the internet link.
 
    <br />
    <br />
@@ -111,7 +111,7 @@
    <br />
    <br />
    <li />Details page on pptpd service :
-   <br />It presents the list of the vpn connexions on the server, with the start, end, duration, client IP/login, and amount of data transferred. Connexions which lasted more than 2 hours are highlighted.This parameter can be changed in the configuration page of Sme8admin.
+   <br />It presents the list of the vpn connexions on the server, with the start, end, duration, client IP/login, and amount of data transferred. Connexions which lasted more than 2 hours are highlighted.This parameter can be changed in the configuration page of Sme9admin.
 
    <br />
    <br />

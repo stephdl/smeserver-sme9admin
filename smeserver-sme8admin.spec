@@ -28,7 +28,7 @@ Requires: rrdtool
 Requires: hddtemp
 Requires: sysstat
 Requires: lm_sensors
-Obsoletes: smeserver-sme7admin
+Obsoletes: smeserver-sme8admin
 Obsoletes: smeserver-sme6admin
 
 AutoReqProv: no

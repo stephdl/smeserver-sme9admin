@@ -1,5 +1,5 @@
 #!/bin/sh
-# Sme8admin - script shell pour l'arret/demarrage du service
+# Sme9admin - script shell pour l'arret/demarrage du service
 # Copyright (C) 2006
 # This file is distributed under the GPL license.
 # Landry Breuil <landry@firewall-services.com>, 2006.
@@ -44,7 +44,7 @@ case "$1" in
 	RETVAL=$?
 	;;
   reload)
-	echo -n "Sme8admin configuration reloaded: "
+	echo -n "Sme9admin configuration reloaded: "
     # A VOIR !!
 	kill -1 `cat /var/run/sme9admin.pid`
     RETVAl=$?
