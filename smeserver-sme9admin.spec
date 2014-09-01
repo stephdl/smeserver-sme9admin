@@ -98,3 +98,4 @@ rm -rf $RPM_BUILD_ROOT
 %files -f %{name}-%{version}-filelist
 %defattr(-,root,root)
 %attr(755,root,root) /etc/e-smith/sql/init/sme9admin
+%attr(755,root,root) /usr/bin/sme9admind
