@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 6
+%define release 7
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -32,6 +32,9 @@ Obsoletes: smeserver-sme8admin
 AutoReqProv: no
 
 %changelog
+* Mon Sep 01 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-7.sme
+- added 755 to /usr/bin/sme9admind
+
 * Wed Jun 18 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-6.sme
 - Initial release to sme9
 
