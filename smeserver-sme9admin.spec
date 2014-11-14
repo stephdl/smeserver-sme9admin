@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 7
+%define release 8
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -32,6 +32,11 @@ Obsoletes: smeserver-sme8admin
 AutoReqProv: no
 
 %changelog
+* Fri Nov 14 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-8.sme
+- Added a service in rc7.d for lm_sensors
+- added to sadf the -S to collect swap data
+- changed txbyt/rxbyt to rxkB/txkB for collecting network load
+
 * Mon Sep 01 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-7.sme
 - added 755 to /usr/bin/sme9admind
 

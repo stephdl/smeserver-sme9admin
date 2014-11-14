@@ -8,6 +8,10 @@ service_link_enhanced("sme9admind", "K97", "6");
 service_link_enhanced("sme9admind", "K20", "0");
 service_link_enhanced("sme9admind", "K20", "1");
 
+
+# Start and stop links to lm_sensors
+service_link_enhanced("lm_sensors", "S99", "7");
+
 # Links for the panel
 panel_link("sme9admin", "manager");
 #system("mkdir -p root/etc/e-smith/web/panels/manager/html/sme9admin");

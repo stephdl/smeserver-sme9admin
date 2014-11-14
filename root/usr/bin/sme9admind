@@ -1055,7 +1055,8 @@ sub get_sar {
     {`/usr/lib64/sa/sadc 1 1 $rrddir/sadc.out; /usr/lib64/sa/sadc 1 1 $rrddir/sadc.bck`;}
     # small change to support sysstat > 5.1
     my @sardata;
-    if ( -x '/usr/bin/sadf' ) { @sardata=`/usr/bin/sadf -- -qrbu -n DEV $rrddir/sadc.out`; }
+    if ( -x '/usr/bin/sadf' ) { @sardata=`/usr/bin/sadf -- -qrbuS -n DEV $rrddir/sadc.out`; }
+    # Now we could remove the followed line, since with sme9 it is no more needed
     else { @sardata=`/usr/bin/sar -hqrbu -n DEV -f $rrddir/sadc.out`; }
     unlink("$rrddir/sadc.out");
 
@@ -1079,15 +1080,15 @@ sub get_sar {
         #local net
         if(/$InternalInterface\srxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_pin="$1.$3";}
         if(/$InternalInterface\stxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_pout="$1.$3";}
-        if(/$InternalInterface\srxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_bin="$1.$3";}
-        if(/$InternalInterface\stxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_bout="$1.$3";}
+        if(/$InternalInterface\srxkB\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_bin="$1.$3";}
+        if(/$InternalInterface\stxkB\/s\s(\d+)(,|\.)(\d+)/o){$if_loc_bout="$1.$3";}
 
         #external net (if not SrvOnly)
         if (defined $ExternalInterface) {
             if(/$ExternalInterface\srxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_pin="$1.$3";}
             if(/$ExternalInterface\stxpck\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_pout="$1.$3";}
-            if(/$ExternalInterface\srxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_bin="$1.$3";}
-            if(/$ExternalInterface\stxbyt\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_bout="$1.$3";}
+            if(/$ExternalInterface\srxkB\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_bin="$1.$3";}
+            if(/$ExternalInterface\stxkB\/s\s(\d+)(,|\.)(\d+)/o){$if_ext_bout="$1.$3";}
         }
 
         #memory

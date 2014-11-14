@@ -1496,14 +1496,14 @@ sub showNetGraph
 	#trafic sur l'interface cote reseau local	
     createShowGraph(gettext("Load on the local network interface."),"if_loc",
 		"--title=".gettext("Local network load"),
-		"--vertical-label=b/s",
+		"--vertical-label=KB/s",
 		"--start=$start","--base=1000","--lower-limit=0",
 		"DEF:bin=$rrddir/if_loc.rrd:bin:AVERAGE","DEF:maxbin=$rrddir/if_loc.rrd:bin:MAX","DEF:bout=$rrddir/if_loc.rrd:bout:AVERAGE","DEF:maxbout=$rrddir/if_loc.rrd:bout:MAX","DEF:minbin=$rrddir/if_loc.rrd:bin:MIN","DEF:minbout=$rrddir/if_loc.rrd:bout:MIN",
 		"CDEF:adj_bout=0,bout,-",
-		"COMMENT:      ","AREA:bin#0066FF:".gettext("Incoming bytes"),"AREA:adj_bout#FF6633:".gettext("Outgoing bytes"),"COMMENT:\\n",
-		"COMMENT:Max\\: ",'GPRINT:maxbin:MAX:%8.2lf %sb/s','GPRINT:maxbout:MAX:%8.2lf %sb/s',"COMMENT:\\n",
-		"COMMENT:Min\\: ",'GPRINT:minbin:MIN:%8.2lf %sb/s','GPRINT:minbout:MIN:%8.2lf %sb/s',"COMMENT:\\n",
-		"COMMENT:Last\\:",'GPRINT:bin:LAST:%8.2lf %sb/s','GPRINT:bout:LAST:%8.2lf %sb/s',"COMMENT:\\n");
+		"COMMENT:      ","AREA:bin#0066FF:".gettext("Incoming Kilobytes"),"AREA:adj_bout#FF6633:".gettext("Outgoing Kilobytes"),"COMMENT:\\n",
+		"COMMENT:Max\\: ",'GPRINT:maxbin:MAX:%8.2lf %sKB/s','GPRINT:maxbout:MAX:%8.2lf %sKB/s',"COMMENT:\\n",
+		"COMMENT:Min\\: ",'GPRINT:minbin:MIN:%8.2lf %sKB/s','GPRINT:minbout:MIN:%8.2lf %sKB/s',"COMMENT:\\n",
+		"COMMENT:Last\\:",'GPRINT:bin:LAST:%8.2lf %sKB/s','GPRINT:bout:LAST:%8.2lf %sKB/s',"COMMENT:\\n");
 
     #si on a une 2e interface reseay
     if ($ExternalInterface ne "")
@@ -1511,14 +1511,14 @@ sub showNetGraph
 	    #trafic sur l'interface cote reseau externe	
 	    createShowGraph(gettext("Load on the external network interface (to internet)."),"if_ext",
     		"--title=".gettext("External network load"),
-	    	"--vertical-label=b/s",
+	    	"--vertical-label=KB/s",
 		    "--start=$start","--base=1000","--lower-limit=0",
     		"DEF:bin=$rrddir/if_ext.rrd:bin:AVERAGE","DEF:maxbin=$rrddir/if_ext.rrd:bin:MAX","DEF:bout=$rrddir/if_ext.rrd:bout:AVERAGE","DEF:maxbout=$rrddir/if_ext.rrd:bout:MAX","DEF:minbin=$rrddir/if_ext.rrd:bin:MIN","DEF:minbout=$rrddir/if_ext.rrd:bout:MIN",
 	    	"CDEF:adj_bout=0,bout,-",
-		    "COMMENT:      ","AREA:bin#FF6633:".gettext("Incoming bytes"),"AREA:adj_bout#0066FF:".gettext("Outgoing bytes"),"COMMENT:\\n",
-		"COMMENT:Max\\: ",'GPRINT:maxbin:MAX:%8.2lf %sb/s','GPRINT:maxbout:MAX:%8.2lf %sb/s',"COMMENT:\\n",
-		"COMMENT:Min\\: ",'GPRINT:minbin:MIN:%8.2lf %sb/s','GPRINT:minbout:MIN:%8.2lf %sb/s',"COMMENT:\\n",
-		"COMMENT:Last\\:",'GPRINT:bin:LAST:%8.2lf %sb/s','GPRINT:bout:LAST:%8.2lf %sb/s',"COMMENT:\\n");
+		    "COMMENT:      ","AREA:bin#FF6633:".gettext("Incoming Kilobytes"),"AREA:adj_bout#0066FF:".gettext("Outgoing Kilobytes"),"COMMENT:\\n",
+		"COMMENT:Max\\: ",'GPRINT:maxbin:MAX:%8.2lf %sKB/s','GPRINT:maxbout:MAX:%8.2lf %sKB/s',"COMMENT:\\n",
+		"COMMENT:Min\\: ",'GPRINT:minbin:MIN:%8.2lf %sKB/s','GPRINT:minbout:MIN:%8.2lf %sKB/s',"COMMENT:\\n",
+		"COMMENT:Last\\:",'GPRINT:bin:LAST:%8.2lf %sKB/s','GPRINT:bout:LAST:%8.2lf %sKB/s',"COMMENT:\\n");
 
 	    print $q->p(gettext("Network load on the server except routing.")),
 			$q->ul(
@@ -1535,7 +1535,7 @@ sub showNetGraph
         
         createShowGraph("","if_delta",
 		    "--title=".gettext("Network load on the server"),
-    		"--vertical-label=b/s",
+    		"--vertical-label=KB/s",
 	    	"--start=$start","--base=1000","--lower-limit=0",
 		    "DEF:extbin=$rrddir/if_ext.rrd:bin:AVERAGE","DEF:maxextbin=$rrddir/if_ext.rrd:bin:MAX","DEF:extbout=$rrddir/if_ext.rrd:bout:AVERAGE","DEF:maxextbout=$rrddir/if_ext.rrd:bout:MAX",
     		"DEF:locbin=$rrddir/if_loc.rrd:bin:AVERAGE","DEF:maxlocbin=$rrddir/if_loc.rrd:bin:MAX","DEF:locbout=$rrddir/if_loc.rrd:bout:AVERAGE","DEF:maxlocbout=$rrddir/if_loc.rrd:bout:MAX",
