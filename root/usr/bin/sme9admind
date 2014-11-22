@@ -52,6 +52,7 @@ my %params=(
     'SensorsTag1'=>"temp1",
     'SensorsTag2'=>"temp2",
     'SensorsTagFan'=>"fan1",
+    'SensorsTagFan2'=>"",
 
     'LimitPppoeDisconnect'=>"1",
     'LimitPppoeDuration'=>"4",
@@ -113,7 +114,7 @@ my %mois=("Jan"=>1,"jan"=>1,
 #----------------------------------
 # definition des variables pour l'alimentation des rrds
 #sensors.rrd => sensors, hddtemp
-my ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed);
+my ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed,$sensors_fan2_speed);
 #hd.rrd => df, du
 my ($hd_total,$hd_used,$hd_free,$hd_log,$hd_files,$hd_squid,$hd_mysql,$hd_blkread,$hd_blkwrite);
 #net.rrd => parse_logs, ping, smbstatus
@@ -926,10 +927,10 @@ sub get_sensors_hddtemp {
     #temp1:       +30°C  (limit =  +60°C)                       sensor = thermistor
     #temp2:     +46.0°C  (limit =  +60°C, hysteresis =  +50°C) sensor = 3904 transistor
 
-    ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed)=('U','U','U','U','U');
+    ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed,$sensors_fan2_speed)=('U','U','U','U','U','U');
 
-    my ($tag1,$tag2,$tag3,$tag4,$tag5)=($params{'SensorsTag1'},$params{'SensorsTag2'},$params{'SensorsTagFan'},
-        $params{'hd1'},$params{'hd2'}); 
+    my ($tag1,$tag2,$tag3,$tag4,$tag5,$tag6)=($params{'SensorsTag1'},$params{'SensorsTag2'},$params{'SensorsTagFan'},
+        $params{'hd1'},$params{'hd2'},$params{'SensorsTagFan2'}); 
 
     #a noter que si hddtemp & lm_sensors n'ont pas ete installés,ca ne plante pas !!
     my @sensors=`/usr/bin/sensors -A 2> /dev/null`;
@@ -937,6 +938,7 @@ sub get_sensors_hddtemp {
         if ($tag1 ne "" && (/$tag1:\s+(\+|-)?([0-9.]+).{1,2}C/o)) {$sensors_temp1=$2;}
         if ($tag2 ne "" && (/$tag2:\s+(\+|-)?([0-9.]+).{1,2}C/o)) {$sensors_temp2=$2;}
         if ($tag3 ne "" && (/$tag3:\s+(\d+) RPM/o)) {$sensors_fan_speed=$1;}
+        if ($tag6 ne "" && (/$tag6:\s+(\d+) RPM/o)) {$sensors_fan2_speed=$1;}
     }
 
     if ($tag4 ne "") {
@@ -1162,7 +1164,7 @@ sub get_proc {
 sub update_rrd {
 #DEBUG !! 
 #    print "sensors_temp1=$sensors_temp1,sensors_temp_hd1=$sensors_temp_hd1,sensors_temp_hd2=$sensors_temp_hd2,";
-#    print "sensors_temp2=$sensors_temp2,sensors_fan_speed=$sensors_fan_speed\n";
+#    print "sensors_temp2=$sensors_temp2,sensors_fan_speed=$sensors_fan_speed,sensors_fan2_speed=$sensors_fan2_speed\n";
 #    print "hd_total=$hd_total,hd_used=$hd_used,hd_free=$hd_free,hd_log=$hd_log,";
 #    print "hd_files=$hd_files,hd_squid=$hd_squid,hd_mysql=$hd_mysql,hd_blkread=$hd_blkread,hd_blkwrite=$hd_blkwrite\n";
 #    print "if_loc_bin=$if_loc_bin,if_loc_bout=$if_loc_bout,if_loc_pin=$if_loc_pin,if_loc_pout=$if_loc_pout\n";
@@ -1185,7 +1187,7 @@ sub update_rrd {
 #    print "sessions_vpn=$sessions_vpn,sessions_netbios=$sessions_netbios\n";
 
     my %rrds=(
-        "sensors"=>"$sensors_temp1:$sensors_temp2:$sensors_temp_hd1:$sensors_temp_hd2:$sensors_fan_speed",
+        "sensors"=>"$sensors_temp1:$sensors_temp2:$sensors_temp_hd1:$sensors_temp_hd2:$sensors_fan_speed:$sensors_fan2_speed",
         "hd"=>"$hd_total:$hd_used:$hd_free:$hd_log:$hd_files:$hd_squid:$hd_mysql:$hd_blkread:$hd_blkwrite",
         "if_loc"=>"$if_loc_bin:$if_loc_bout:$if_loc_pin:$if_loc_pout",
         "if_ext"=>"$if_ext_bin:$if_ext_bout:$if_ext_pin:$if_ext_pout",

@@ -26,6 +26,9 @@ use esmith::I18N;
 use POSIX;
 use Locale::gettext;
 
+##raid status
+use strict;
+use Getopt::Long;
 #----------------------------------------------------------------
 #declaration de variables globales
 
@@ -152,6 +155,8 @@ my %params=(
    	'SensorsTag1'=>"temp1",
    	'SensorsTag2'=>"temp2",
    	'SensorsTagFan'=>"fan1",
+        'SensorsTagFan2'=>"",
+
   
    	'LimitPppoeDisconnect'=>"1",
 	'LimitPppoeDuration'=>"4",
@@ -256,9 +261,82 @@ sub accueil
     my $uptime=`/usr/bin/uptime`; 
     print $q->p(gettext("Stats :\n")),$q->p($uptime);
 
+##Start to check linux raid status    
+    my $Raidcheck = `/bin/cat /proc/mdstat`;
+    if ( $Raidcheck =~ "raid")
+{
+    print $q->br;
+    print $q->p(gettext("Status of Linux software RAID :")); 
+    my $file = "/proc/mdstat";
+    my $device = "all";
+
+    # Get command line options.
+    GetOptions ('file=s' => \$file,
+    'device=s' => \$device,
+    'help' => sub { &usage() } );
+
+    ## Strip leading "/dev/" from --device in case it has been given
+    $device =~ s/^\/dev\///;
+
+    ## This is a global return value - set to the worst result we get overall
+    my $retval = 0;
+
+    my (%active_devs, %failed_devs, %spare_devs);
+
+    open FILE, "< $file" or die "Can't open $file : $!";
+    while (<FILE>) {
+    next if ! /^(md\d+)+\s*:/;
+    next if $device ne "all" and $device ne $1;
+    my $dev = $1;
+
+    my @array = split(/ /);
+    for $_ (@array) {
+        next if ! /(\w+)\[\d+\](\(.\))*/;
+        if ($2 eq "(F)") {
+            $failed_devs{$dev} .= "$1,";
+        }
+        elsif ($2 eq "(S)") {
+            $spare_devs{$dev} .= "$1,";
+        }
+        else {
+            $active_devs{$dev} .= "$1,";
+        }
+    }
+    if (! defined($active_devs{$dev})) { $active_devs{$dev} = "none"; }
+        else { $active_devs{$dev} =~ s/,$//; }
+    if (! defined($spare_devs{$dev}))  { $spare_devs{$dev}  = "none"; }
+        else { $spare_devs{$dev} =~ s/,$//; }
+    if (! defined($failed_devs{$dev})) { $failed_devs{$dev} = "none"; }
+        else { $failed_devs{$dev} =~ s/,$//; }
+    
+    $_ = <FILE>;
+    /\[(\d+)\/(\d+)\]\s+\[(.*)\]$/;
+    my $devs_total = $1;
+    my $devs_up = $2;
+    my $stat = $3;
+    my $result = "OK";
+    if ($devs_total > $devs_up or $failed_devs{$dev} ne "none") {
+        $result = "CRITICAL";
+    }
+
+    my @raidstatus = "$result - $dev [$stat] has $devs_up of $devs_total devices active (active=$active_devs{$dev} failed=$failed_devs{$dev} spare=$spare_devs{$dev})\n";
+    foreach my $raid (@raidstatus)
+        {
+              if ( $raid =~ ("CRITICAL" && "failed=none") ){
+            print $q->table( $q->td($q->td({bgcolor=>(($raid =~ "CRITICAL")?"orange":"#32CD32")},$raid)));}
+
+              elsif ( $raid =~ ("CRITICAL" && "_") ){
+            print $q->table ($q->td($q->td({bgcolor=>(($raid =~ "CRITICAL")?"red":"#32CD32")},$raid)));}
+        }
+    
+    }
+}    
+
+
     #s'il ya des users connectes on affiche le resultat de la commande 'w'
     if (!($uptime =~ /0 user /))
     {
+        print $q->br;
         print $q->p(gettext("Connected users :")),$q->start_table({-border => '1'}),
     		$q->Tr($q->th(gettext("Login")),$q->th(gettext("TTY")),$q->th(gettext("From")),$q->th(gettext("Since")),$q->th(gettext("Idle")),$q->th(gettext("Command")));
         #root     pts/3    pc-00010:S.0     17:09   58.00s  1.13s  1.05s vim sme9admin
@@ -515,6 +593,8 @@ sub showConf
         	esmith::cgi::genNameValueRow($q,gettext("First sensor (cpu)"),'SensorsTag1',$params{'SensorsTag1'}),
         	esmith::cgi::genNameValueRow($q,gettext("Second sensor (motherboard)"),'SensorsTag2',$params{'SensorsTag2'}),
         	esmith::cgi::genNameValueRow($q,gettext("Third sensor (fan)"),'SensorsTagFan',$params{'SensorsTagFan'}),
+                esmith::cgi::genNameValueRow($q,gettext("Fourth sensor (fan2)"),'SensorsTagFan2',$params{'SensorsTagFan2'}),
+
 	    	$q->end_table,$q->hr({width=>'50%'});
         
     	#partie alertes
@@ -1396,17 +1476,42 @@ sub showHardGraph
     
     #creation du graphe des temperatures
 	createShowGraph(gettext("Hardware temperatures (Processor, motherboard, hard disks)."),"temperature",@tab);
-        
-    createShowGraph(gettext("Processor fan speed."),"fanspeed",
-		"--title=".gettext("Fan speed"),
-		"--vertical-label=".gettext("Rpm"),
-		"--start=$start",
-		"DEF:fspd=$rrddir/sensors.rrd:fspd:AVERAGE","DEF:maxfspd=$rrddir/sensors.rrd:fspd:MAX","DEF:minfspd=$rrddir/sensors.rrd:fspd:MIN",
-		"COMMENT:    ",     "LINE2:fspd#1000FF:".gettext("Fan speed"),	"COMMENT:\\n",
-		"COMMENT:Max\\: ",    "GPRINT:maxfspd:MAX:%5.0lf ".gettext("Rpm"),	            "COMMENT:\\n",
-		"COMMENT:Min\\: ",	"GPRINT:minfspd:MIN:%5.0lf ".gettext("Rpm"),	            "COMMENT:\\n",
-		"COMMENT:Avg\\: ",	"GPRINT:fspd:AVERAGE:%5.0lf ".gettext("Rpm"),            "COMMENT:\\n",
-		"COMMENT:Last\\:",	"GPRINT:fspd:LAST:%5.0lf ".gettext("Rpm"), "COMMENT:\\n");
+    
+ my $has_second_fan=1;
+    $has_second_fan=0 if ($params{'SensorsTagFan2'} eq '');
+
+
+ my @tabfan=("--title=".gettext("Fan speed"),
+                "--vertical-label=".gettext("Rpm"),
+                "--start=$start",
+                "DEF:fspd=$rrddir/sensors.rrd:fspd:AVERAGE","DEF:maxfspd=$rrddir/sensors.rrd:fspd:MAX","DEF:minfspd=$rrddir/sensors.rrd:fspd:MIN");
+   push @tabfan, "DEF:fspd2=$rrddir/sensors.rrd:fspd2:AVERAGE",     "DEF:maxfspd2=$rrddir/sensors.rrd:fspd2:MAX",     "DEF:minfspd2=$rrddir/sensors.rrd:fspd2:MIN" if ($has_second_fan);
+   push @tabfan, "COMMENT:    ",     "LINE2:fspd#1000FF:".gettext("Fan speed") . "     ";
+   push @tabfan, "LINE2:fspd2#550000:".gettext("Fan speed"),  "COMMENT:\\n" if ($has_second_fan);
+   push @tabfan, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxfspd:MAX:%5.0lf ".gettext("Rpm"). "                   ";
+   push @tabfan, "GPRINT:maxfspd2:MAX:%5.0lf ".gettext("Rpm") if ($has_second_fan);
+   push @tabfan, "COMMENT:\\n", "COMMENT:Min\\:  ",      "GPRINT:minfspd:MIN:%5.0lf ".gettext("Rpm"). "                   ";
+   push @tabfan, "GPRINT:minfspd2:MIN:%5.0lf ".gettext("Rpm") if ($has_second_fan);
+   push @tabfan, "COMMENT:\\n", "COMMENT:Avg\\: ",      "GPRINT:fspd:AVERAGE:%5.0lf ".gettext("Rpm"). "                   ";
+   push @tabfan,  "GPRINT:fspd2:AVERAGE:%5.0lf ".gettext("Rpm") if ($has_second_fan);
+   push @tabfan, "COMMENT:\\n", "COMMENT:Last\\: ",      "GPRINT:fspd:LAST:%5.0lf ".gettext("Rpm"). "                   ";
+   push @tabfan, "GPRINT:fspd2:LAST:%5.0lf ".gettext("Rpm") if ($has_second_fan);
+   push @tabfan, "COMMENT:\\n";
+   
+        createShowGraph(gettext("Processor fan speed."),"fanspeed",@tabfan);
+
+#    createShowGraph(gettext("Processor fan speed."),"fanspeed",
+#		"--title=".gettext("Fan speed"),
+#		"--vertical-label=".gettext("Rpm"),
+#		"--start=$start",
+#		"DEF:fspd=$rrddir/sensors.rrd:fspd:AVERAGE","DEF:maxfspd=$rrddir/sensors.rrd:fspd:MAX","DEF:minfspd=$rrddir/sensors.rrd:fspd:MIN",
+#                "DEF:fspd2=$rrddir/sensors.rrd:fspd2:AVERAGE","DEF:maxfspd2=$rrddir/sensors.rrd:fspd2:MAX","DEF:minfspd2=$rrddir/sensors.rrd:fspd2:MIN",
+#
+#		"COMMENT:    ",     "LINE2:fspd#1000FF:".gettext("Fan speed"),	"LINE2:fspd2#00EEBB:".gettext("Fan speed"), "COMMENT:\\n",
+#		"COMMENT:Max\\: ",    "GPRINT:maxfspd:MAX:%5.0lf ".gettext("Rpm"),	            "COMMENT:\\n",
+#		"COMMENT:Min\\: ",	"GPRINT:minfspd:MIN:%5.0lf ".gettext("Rpm"),	            "COMMENT:\\n",
+#		"COMMENT:Avg\\: ",	"GPRINT:fspd:AVERAGE:%5.0lf ".gettext("Rpm"),            "COMMENT:\\n",
+#		"COMMENT:Last\\:",	"GPRINT:fspd:LAST:%5.0lf ".gettext("Rpm"), "COMMENT:\\n");
     
     print $q->p($q->a ({href => "$progname"},gettext("Back\n")));
 }
