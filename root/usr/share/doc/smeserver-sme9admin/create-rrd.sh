@@ -29,6 +29,10 @@ echo -e "Creation of the rrds directory :\t[OK]"
 # t2 : temperature du boitier/carte mere
 # fspd : vitesse du ventilateur processeur
 # fspd2 : vitesse du ventilateur processeur
+# thd3 : temperature du disque dur 3 si disponible
+# thd4 : temperature du disque dur 4 si disponible
+# thd5 : temperature du disque dur 5 si disponible
+# thd6 : temperature du disque dur 6 si disponible
 
 rrdtool create /var/lib/sme9admin/sensors.rrd -s 300 \
     DS:t1:GAUGE:600:0:100 \
@@ -37,6 +41,10 @@ rrdtool create /var/lib/sme9admin/sensors.rrd -s 300 \
     DS:thd2:GAUGE:600:0:100 \
     DS:fspd:GAUGE:600:0:10000 \
     DS:fspd2:GAUGE:600:0:10000 \
+    DS:thd3:GAUGE:600:0:100 \
+    DS:thd4:GAUGE:600:0:100 \
+    DS:thd5:GAUGE:600:0:100 \
+    DS:thd6:GAUGE:600:0:100 \
     RRA:AVERAGE:0.5:1:12 \
     RRA:AVERAGE:0.5:1:72 \
     RRA:AVERAGE:0.5:1:288 \

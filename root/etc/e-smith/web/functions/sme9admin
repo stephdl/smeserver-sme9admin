@@ -151,6 +151,11 @@ my %params=(
    
    	'hd1'=>"hda",
    	'hd2'=>"",
+        'hd3'=>"",
+        'hd4'=>"",
+        'hd5'=>"",
+        'hd6'=>"",
+
    	'UseDu'=>"on",
    	'SensorsTag1'=>"temp1",
    	'SensorsTag2'=>"temp2",
@@ -590,6 +595,11 @@ sub showConf
                     $q->td($q->popup_menu(-name=>'UseDu', -values=>['on','off'], -default=>$params{'UseDu'}))),
 	    	esmith::cgi::genNameValueRow($q,gettext("First hard disk"),'hd1',$params{'hd1'}),
         	esmith::cgi::genNameValueRow($q,gettext("Second hard disk"),'hd2',$params{'hd2'}),
+                esmith::cgi::genNameValueRow($q,gettext("Third hard disk"),'hd3',$params{'hd3'}),
+                esmith::cgi::genNameValueRow($q,gettext("Fourth hard disk"),'hd4',$params{'hd4'}),
+                esmith::cgi::genNameValueRow($q,gettext("Fifth hard disk"),'hd5',$params{'hd5'}),
+                esmith::cgi::genNameValueRow($q,gettext("Sixth hard disk"),'hd6',$params{'hd6'}),
+
         	esmith::cgi::genNameValueRow($q,gettext("First sensor (cpu)"),'SensorsTag1',$params{'SensorsTag1'}),
         	esmith::cgi::genNameValueRow($q,gettext("Second sensor (motherboard)"),'SensorsTag2',$params{'SensorsTag2'}),
         	esmith::cgi::genNameValueRow($q,gettext("Third sensor (fan)"),'SensorsTagFan',$params{'SensorsTagFan'}),
@@ -1449,9 +1459,6 @@ sub showHardGraph
   
 	print $q->p($q->b($labels{"$start"}));
     
-    my $has_second_hd=1;
-    $has_second_hd=0 if ($params{'hd2'} eq '');
-    
     print $q->p($q->a ({href => "$progname"},gettext("Back\n")));
     
 	my @tab=("--title=".gettext("Temperatures"),
@@ -1459,23 +1466,110 @@ sub showHardGraph
 		"--start=$start",
 		"DEF:t1=$rrddir/sensors.rrd:t1:AVERAGE",    "DEF:maxt1=$rrddir/sensors.rrd:t1:MAX", "DEF:mint1=$rrddir/sensors.rrd:t1:MIN",
 		"DEF:t2=$rrddir/sensors.rrd:t2:AVERAGE",    "DEF:maxt2=$rrddir/sensors.rrd:t2:MAX",	"DEF:mint2=$rrddir/sensors.rrd:t2:MIN",
-		"DEF:thd1=$rrddir/sensors.rrd:thd1:AVERAGE",    "DEF:maxthd1=$rrddir/sensors.rrd:thd1:MAX",	"DEF:minthd1=$rrddir/sensors.rrd:thd1:MIN");
-
-    push @tab, "DEF:thd2=$rrddir/sensors.rrd:thd2:AVERAGE",	"DEF:maxthd2=$rrddir/sensors.rrd:thd2:MAX",	"DEF:minthd2=$rrddir/sensors.rrd:thd2:MIN" if ($has_second_hd);
-    push @tab, "COMMENT:    ",     "LINE2:t1#1000FF:Temp 1 ",      "LINE2:t2#00EEBB:Temp 2 ",	    "LINE2:thd1#CC5500:Temp hd 1 ";
-    push @tab, "LINE2:thd2#550000:Temp hd 2" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf °C",	"GPRINT:maxt2:MAX:%5.2lf °C  ",	"GPRINT:maxthd1:MAX:%5.2lf °C     ";
-    push @tab, "GPRINT:maxthd2:MAX:%5.2lf °C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Min\\: ",	"GPRINT:mint1:MIN:%5.2lf °C",	"GPRINT:mint2:MIN:%5.2lf °C  ",	"GPRINT:minthd1:MIN:%5.2lf °C     ";
-    push @tab, "GPRINT:minthd2:MIN:%5.2lf °C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Avg\\: ",	"GPRINT:t1:AVERAGE:%5.2lf °C",	"GPRINT:t2:AVERAGE:%5.2lf °C  ","GPRINT:thd1:AVERAGE:%5.2lf °C     ";
-    push @tab, "GPRINT:thd2:AVERAGE:%5.2lf °C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n", "COMMENT:Last\\:",	"GPRINT:t1:LAST:%5.2lf °C",	    "GPRINT:t2:LAST:%5.2lf °C  ",	"GPRINT:thd1:LAST:%5.2lf °C     ";
-    push @tab, "GPRINT:thd2:LAST:%5.2lf °C" if ($has_second_hd);
-    push @tab, "COMMENT:\\n";
+                "COMMENT:    ",     "LINE2:t1#1000FF:Temp 1 ",      "LINE2:t2#00EEBB:Temp 2 ",
+                "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf °C",	"GPRINT:maxt2:MAX:%5.2lf °C  ",
+                "COMMENT:\\n", "COMMENT:Min\\: ",	"GPRINT:mint1:MIN:%5.2lf °C",	"GPRINT:mint2:MIN:%5.2lf °C  ",
+                "COMMENT:\\n", "COMMENT:Avg\\: ",	"GPRINT:t1:AVERAGE:%5.2lf °C",	"GPRINT:t2:AVERAGE:%5.2lf °C  ",
+                "COMMENT:\\n", "COMMENT:Last\\:",	"GPRINT:t1:LAST:%5.2lf °C",	    "GPRINT:t2:LAST:%5.2lf °C  ",
+                "COMMENT:\\n");
     
     #creation du graphe des temperatures
-	createShowGraph(gettext("Hardware temperatures (Processor, motherboard, hard disks)."),"temperature",@tab);
+	#createShowGraph(gettext("Hardware temperatures (Processor, motherboard, hard disks)."),"temperature",@tab);
+         createShowGraph(gettext("Hardware temperatures (Processor, motherboard)."),"temperature",@tab);
+
+#   my $has_second_hd=1;
+#    $has_second_hd=0 if ($params{'hd2'} eq '');
+
+
+
+#        my @tab=("--title=".gettext("Temperatures"),
+#                "--vertical-label=T°C",
+#                "--start=$start",
+#                "DEF:t1=$rrddir/sensors.rrd:t1:AVERAGE",    "DEF:maxt1=$rrddir/sensors.rrd:t1:MAX", "DEF:mint1=$rrddir/sensors.rrd:t1:MIN",
+#                "DEF:t2=$rrddir/sensors.rrd:t2:AVERAGE",    "DEF:maxt2=$rrddir/sensors.rrd:t2:MAX",     "DEF:mint2=$rrddir/sensors.rrd:t2:MIN",
+#                "DEF:thd1=$rrddir/sensors.rrd:thd1:AVERAGE",    "DEF:maxthd1=$rrddir/sensors.rrd:thd1:MAX",     "DEF:minthd1=$rrddir/sensors.rrd:thd1:MIN");
+#
+#    push @tab, "DEF:thd2=$rrddir/sensors.rrd:thd2:AVERAGE",     "DEF:maxthd2=$rrddir/sensors.rrd:thd2:MAX",     "DEF:minthd2=$rrddir/sensors.rrd:thd2:MIN" if ($has_second_hd);
+#    push @tab, "COMMENT:    ",     "LINE2:t1#1000FF:Temp 1 ",      "LINE2:t2#00EEBB:Temp 2 ",       "LINE2:thd1#CC5500:Temp hd 1 ";
+#    push @tab, "LINE2:thd2#550000:Temp hd 2" if ($has_second_hd);
+#    push @tab, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf °C",       "GPRINT:maxt2:MAX:%5.2lf °C  ", "GPRINT:maxthd1:MAX:%5.2lf °C     ";
+#    push @tab, "GPRINT:maxthd2:MAX:%5.2lf °C" if ($has_second_hd);
+#    push @tab, "COMMENT:\\n", "COMMENT:Min\\: ",        "GPRINT:mint1:MIN:%5.2lf °C",   "GPRINT:mint2:MIN:%5.2lf °C  ", "GPRINT:minthd1:MIN:%5.2lf °C     ";
+#    push @tab, "GPRINT:minthd2:MIN:%5.2lf °C" if ($has_second_hd);
+#    push @tab, "COMMENT:\\n", "COMMENT:Avg\\: ",        "GPRINT:t1:AVERAGE:%5.2lf °C",  "GPRINT:t2:AVERAGE:%5.2lf °C  ","GPRINT:thd1:AVERAGE:%5.2lf °C     ";
+#    push @tab, "GPRINT:thd2:AVERAGE:%5.2lf °C" if ($has_second_hd);
+#    push @tab, "COMMENT:\\n", "COMMENT:Last\\:",        "GPRINT:t1:LAST:%5.2lf °C",         "GPRINT:t2:LAST:%5.2lf °C  ",       "GPRINT:thd1:LAST:%5.2lf °C     ";
+#    push @tab, "GPRINT:thd2:LAST:%5.2lf °C" if ($has_second_hd);
+#    push @tab, "COMMENT:\\n";
+
+    #creation du graphe des temperatures
+#         createShowGraph(gettext("Hardware temperatures (Processor, motherboard, hard disks)."),"temperature",@tab);
+ 
+
+
+
+
+
+   my $has_second_hd=1;
+   $has_second_hd=0 if ($params{'hd2'} eq '');
+   my $has_third_hd=1;
+   $has_third_hd=0 if ($params{'hd3'} eq '');
+   my $has_fourth_hd=1;
+   $has_fourth_hd=0 if ($params{'hd4'} eq '');
+   my $has_fifth_hd=1;
+   $has_fifth_hd=0 if ($params{'hd5'} eq '');
+   my $has_sixth_hd=1;
+   $has_sixth_hd=0 if ($params{'hd6'} eq '');
+
+
+
+
+
+
+        my @HDtab=("--title=".gettext("Hard-disks Temperatures"),
+                "--vertical-label=T°C",
+                "--start=$start",
+                "DEF:thd1=$rrddir/sensors.rrd:thd1:AVERAGE",    "DEF:maxthd1=$rrddir/sensors.rrd:thd1:MAX",     "DEF:minthd1=$rrddir/sensors.rrd:thd1:MIN");
+    push @HDtab, "DEF:thd2=$rrddir/sensors.rrd:thd2:AVERAGE",     "DEF:maxthd2=$rrddir/sensors.rrd:thd2:MAX",     "DEF:minthd2=$rrddir/sensors.rrd:thd2:MIN" if ($has_second_hd);
+    push @HDtab, "DEF:thd3=$rrddir/sensors.rrd:thd3:AVERAGE",     "DEF:maxthd3=$rrddir/sensors.rrd:thd3:MAX",     "DEF:minthd3=$rrddir/sensors.rrd:thd3:MIN" if ($has_third_hd);
+    push @HDtab, "DEF:thd4=$rrddir/sensors.rrd:thd4:AVERAGE",     "DEF:maxthd4=$rrddir/sensors.rrd:thd4:MAX",     "DEF:minthd4=$rrddir/sensors.rrd:thd4:MIN" if ($has_fourth_hd);
+    push @HDtab, "DEF:thd5=$rrddir/sensors.rrd:thd5:AVERAGE",     "DEF:maxthd5=$rrddir/sensors.rrd:thd5:MAX",     "DEF:minthd5=$rrddir/sensors.rrd:thd5:MIN" if ($has_fifth_hd);
+    push @HDtab, "DEF:thd6=$rrddir/sensors.rrd:thd6:AVERAGE",     "DEF:maxthd6=$rrddir/sensors.rrd:thd6:MAX",     "DEF:minthd6=$rrddir/sensors.rrd:thd6:MIN" if ($has_sixth_hd);
+    push @HDtab, "COMMENT:    ",  "LINE2:thd1#CC5500:Temp hd 1";
+    push @HDtab, "LINE2:thd2#550000:Temp hd 2" if ($has_second_hd);
+    push @HDtab, "LINE2:thd3#1000FF:Temp hd 3" if ($has_third_hd);
+    push @HDtab, "LINE2:thd4#00EEBB:Temp hd 4" if ($has_fourth_hd);
+    push @HDtab, "LINE2:thd5#FF2222:Temp hd 5" if ($has_fifth_hd);
+    push @HDtab, "LINE2:thd6#FFD700:Temp hd 6" if ($has_sixth_hd);
+    push @HDtab, "COMMENT:\\n", "COMMENT:Max\\:",    "GPRINT:maxthd1:MAX:%5.2lf °C     ";
+    push @HDtab, "GPRINT:maxthd2:MAX:%5.2lf °C      " if ($has_second_hd);
+    push @HDtab, "GPRINT:maxthd3:MAX:%5.2lf °C      " if ($has_third_hd);
+    push @HDtab, "GPRINT:maxthd4:MAX:%5.2lf °C      " if ($has_fourth_hd);
+    push @HDtab, "GPRINT:maxthd5:MAX:%5.2lf °C      " if ($has_fifth_hd);
+    push @HDtab, "GPRINT:maxthd6:MAX:%5.2lf °C" if ($has_sixth_hd);
+    push @HDtab, "COMMENT:\\n", "COMMENT:Min\\: ",    "GPRINT:minthd1:MIN:%5.2lf °C     ";
+    push @HDtab, "GPRINT:minthd2:MIN:%5.2lf °C      " if ($has_second_hd);
+    push @HDtab, "GPRINT:minthd3:MIN:%5.2lf °C      " if ($has_third_hd);
+    push @HDtab, "GPRINT:minthd4:MIN:%5.2lf °C      " if ($has_fourth_hd);
+    push @HDtab, "GPRINT:minthd5:MIN:%5.2lf °C      " if ($has_fifth_hd);
+    push @HDtab, "GPRINT:minthd6:MIN:%5.2lf °C" if ($has_sixth_hd);
+    push @HDtab, "COMMENT:\\n", "COMMENT:Avg\\: ",    "GPRINT:thd1:AVERAGE:%5.2lf °C    ";
+    push @HDtab, "GPRINT:thd2:AVERAGE:%5.2lf °C      " if ($has_second_hd);
+    push @HDtab, "GPRINT:thd3:AVERAGE:%5.2lf °C      " if ($has_third_hd);
+    push @HDtab, "GPRINT:thd4:AVERAGE:%5.2lf °C      " if ($has_fourth_hd);
+    push @HDtab, "GPRINT:thd5:AVERAGE:%5.2lf °C      " if ($has_fifth_hd);
+    push @HDtab, "GPRINT:thd6:AVERAGE:%5.2lf °C" if ($has_sixth_hd);
+    push @HDtab, "COMMENT:\\n", "COMMENT:Last\\:",   "GPRINT:thd1:LAST:%5.2lf °C     ";
+    push @HDtab, "GPRINT:thd2:LAST:%5.2lf °C      " if ($has_second_hd);
+    push @HDtab, "GPRINT:thd3:LAST:%5.2lf °C      " if ($has_third_hd);
+    push @HDtab, "GPRINT:thd4:LAST:%5.2lf °C      " if ($has_fourth_hd);
+    push @HDtab, "GPRINT:thd5:LAST:%5.2lf °C      " if ($has_fifth_hd);
+    push @HDtab, "GPRINT:thd6:LAST:%5.2lf °C" if ($has_sixth_hd);
+    push @HDtab, "COMMENT:\\n";
+ 
+    #creation du graphe des temperatures
+         createShowGraph(gettext("Hard disks temperatures."),"HD temperature",@HDtab);
+
     
  my $has_second_fan=1;
     $has_second_fan=0 if ($params{'SensorsTagFan2'} eq '');

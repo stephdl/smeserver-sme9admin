@@ -46,8 +46,12 @@ my %params=(
     'OtherMailDomains'=>"",
     'PingTarget'=>"www.google.fr",
 
-    'hd1'=>"hda",
+    'hd1'=>"sda",
     'hd2'=>"",
+    'hd3'=>"",
+    'hd4'=>"",
+    'hd5'=>"",
+    'hd6'=>"",
     'UseDu'=>"on",
     'SensorsTag1'=>"temp1",
     'SensorsTag2'=>"temp2",
@@ -114,7 +118,7 @@ my %mois=("Jan"=>1,"jan"=>1,
 #----------------------------------
 # definition des variables pour l'alimentation des rrds
 #sensors.rrd => sensors, hddtemp
-my ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed,$sensors_fan2_speed);
+my ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed,$sensors_fan2_speed,$sensors_temp_hd3,$sensors_temp_hd4,$sensors_temp_hd5,$sensors_temp_hd6);
 #hd.rrd => df, du
 my ($hd_total,$hd_used,$hd_free,$hd_log,$hd_files,$hd_squid,$hd_mysql,$hd_blkread,$hd_blkwrite);
 #net.rrd => parse_logs, ping, smbstatus
@@ -927,10 +931,11 @@ sub get_sensors_hddtemp {
     #temp1:       +30°C  (limit =  +60°C)                       sensor = thermistor
     #temp2:     +46.0°C  (limit =  +60°C, hysteresis =  +50°C) sensor = 3904 transistor
 
-    ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed,$sensors_fan2_speed)=('U','U','U','U','U','U');
+    ($sensors_temp1,$sensors_temp_hd1,$sensors_temp2,$sensors_temp_hd2,$sensors_fan_speed,$sensors_fan2_speed,$sensors_temp_hd3,$sensors_temp_hd4,$sensors_temp_hd5,$sensors_temp_hd6,)
+                                         =('U','U','U','U','U','U','U','U','U','U');
 
-    my ($tag1,$tag2,$tag3,$tag4,$tag5,$tag6)=($params{'SensorsTag1'},$params{'SensorsTag2'},$params{'SensorsTagFan'},
-        $params{'hd1'},$params{'hd2'},$params{'SensorsTagFan2'}); 
+    my ($tag1,$tag2,$tag3,$tag4,$tag5,$tag6,$tag7,$tag8,$tag9,$tag10)=($params{'SensorsTag1'},$params{'SensorsTag2'},$params{'SensorsTagFan'},
+        $params{'hd1'},$params{'hd2'},$params{'SensorsTagFan2'},$params{'hd3'},$params{'hd4'},$params{'hd5'},$params{'hd6'}); 
 
     #a noter que si hddtemp & lm_sensors n'ont pas ete installés,ca ne plante pas !!
     my @sensors=`/usr/bin/sensors -A 2> /dev/null`;
@@ -940,6 +945,8 @@ sub get_sensors_hddtemp {
         if ($tag3 ne "" && (/$tag3:\s+(\d+) RPM/o)) {$sensors_fan_speed=$1;}
         if ($tag6 ne "" && (/$tag6:\s+(\d+) RPM/o)) {$sensors_fan2_speed=$1;}
     }
+
+    ###Now we retrieve data from Hard-drive temp
 
     if ($tag4 ne "") {
         my @hddtemp=`/usr/sbin/hddtemp /dev/$tag4 2> /dev/null`;
@@ -954,6 +961,35 @@ sub get_sensors_hddtemp {
             if (/\/dev\/$tag5:.*:\s+(\d+).{1,2}C/) {$sensors_temp_hd2=$1;}
         }
     }
+
+    if ($tag7 ne "") {
+        my @hddtemp=`/usr/sbin/hddtemp /dev/$tag7 2> /dev/null`;
+        foreach (@hddtemp) {
+            if (/\/dev\/$tag7:.*:\s+(\d+).{1,2}C/) {$sensors_temp_hd3=$1;}
+        }
+    }
+
+    if ($tag8 ne "") {
+        my @hddtemp=`/usr/sbin/hddtemp /dev/$tag8 2> /dev/null`;
+        foreach (@hddtemp) {
+            if (/\/dev\/$tag8:.*:\s+(\d+).{1,2}C/) {$sensors_temp_hd4=$1;}
+        }
+    }
+
+    if ($tag9 ne "") {
+        my @hddtemp=`/usr/sbin/hddtemp /dev/$tag9 2> /dev/null`;
+        foreach (@hddtemp) {
+            if (/\/dev\/$tag9:.*:\s+(\d+).{1,2}C/) {$sensors_temp_hd5=$1;}
+        }
+    }
+
+    if ($tag10 ne "") {
+        my @hddtemp=`/usr/sbin/hddtemp /dev/$tag10 2> /dev/null`;
+        foreach (@hddtemp) {
+            if (/\/dev\/$tag10:.*:\s+(\d+).{1,2}C/) {$sensors_temp_hd6=$1;}
+        }
+    }
+
 }
 
 sub get_df_du {
@@ -1187,7 +1223,7 @@ sub update_rrd {
 #    print "sessions_vpn=$sessions_vpn,sessions_netbios=$sessions_netbios\n";
 
     my %rrds=(
-        "sensors"=>"$sensors_temp1:$sensors_temp2:$sensors_temp_hd1:$sensors_temp_hd2:$sensors_fan_speed:$sensors_fan2_speed",
+        "sensors"=>"$sensors_temp1:$sensors_temp2:$sensors_temp_hd1:$sensors_temp_hd2:$sensors_fan_speed:$sensors_fan2_speed:$sensors_temp_hd3:$sensors_temp_hd4:$sensors_temp_hd5:$sensors_temp_hd6",
         "hd"=>"$hd_total:$hd_used:$hd_free:$hd_log:$hd_files:$hd_squid:$hd_mysql:$hd_blkread:$hd_blkwrite",
         "if_loc"=>"$if_loc_bin:$if_loc_bout:$if_loc_pin:$if_loc_pout",
         "if_ext"=>"$if_ext_bin:$if_ext_bout:$if_ext_pin:$if_ext_pout",
@@ -1317,6 +1353,46 @@ sub mail_alerte {
             "[ALRT] $SystemName.$DomainName: temp $params{'hd2'} = $sensors_temp_hd2 deg C (max=$params{'MaxHdTemp'} deg C)",
             sub { return
                 sprintf(gettext("The temperature of %s hard disk is %s degrees C, "),($params{'hd2'},$sensors_temp_hd2)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHdTemp'}),
+                gettext("(Advice : check if the server case and the hard disks are well cooled.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHdTemp";
+        }],
+        [
+            "($params{'MaxHdTemp'} && '$params{'hd3'}' ne '' && '$sensors_temp_hd3' ne 'U' && $sensors_temp_hd3 >= $params{'MaxHdTemp'})",
+            "[ALRT] $SystemName.$DomainName: temp $params{'hd3'} = $sensors_temp_hd3 deg C (max=$params{'MaxHdTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature of %s hard disk is %s degrees C, "),($params{'hd3'},$sensors_temp_hd3)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHdTemp'}),
+                gettext("(Advice : check if the server case and the hard disks are well cooled.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHdTemp";
+        }],
+        [
+            "($params{'MaxHdTemp'} && '$params{'hd4'}' ne '' && '$sensors_temp_hd4' ne 'U' && $sensors_temp_hd4 >= $params{'MaxHdTemp'})",
+            "[ALRT] $SystemName.$DomainName: temp $params{'hd4'} = $sensors_temp_hd4 deg C (max=$params{'MaxHdTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature of %s hard disk is %s degrees C, "),($params{'hd4'},$sensors_temp_hd4)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHdTemp'}),
+                gettext("(Advice : check if the server case and the hard disks are well cooled.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHdTemp";
+        }],
+        [
+            "($params{'MaxHdTemp'} && '$params{'hd5'}' ne '' && '$sensors_temp_hd5' ne 'U' && $sensors_temp_hd5 >= $params{'MaxHdTemp'})",
+            "[ALRT] $SystemName.$DomainName: temp $params{'hd5'} = $sensors_temp_hd5 deg C (max=$params{'MaxHdTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature of %s hard disk is %s degrees C, "),($params{'hd5'},$sensors_temp_hd5)),
+                sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHdTemp'}),
+                gettext("(Advice : check if the server case and the hard disks are well cooled.)\n"),
+                gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
+                "https://$SystemName.$DomainName/server-manager/cgi-bin/sme9admin?state=conf_alert&alert=MaxHdTemp";
+        }],
+        [
+            "($params{'MaxHdTemp'} && '$params{'hd6'}' ne '' && '$sensors_temp_hd6' ne 'U' && $sensors_temp_hd6 >= $params{'MaxHdTemp'})",
+            "[ALRT] $SystemName.$DomainName: temp $params{'hd6'} = $sensors_temp_hd6 deg C (max=$params{'MaxHdTemp'} deg C)",
+            sub { return
+                sprintf(gettext("The temperature of %s hard disk is %s degrees C, "),($params{'hd6'},$sensors_temp_hd6)),
                 sprintf(gettext("you had set the alert limit to %s degrees C.\n"),$params{'MaxHdTemp'}),
                 gettext("(Advice : check if the server case and the hard disks are well cooled.)\n"),
                 gettext("If you have access to the server-manager, use this link to modify the limit :\n"),
