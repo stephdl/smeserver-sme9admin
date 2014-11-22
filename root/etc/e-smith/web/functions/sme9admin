@@ -266,7 +266,7 @@ sub accueil
     my $uptime=`/usr/bin/uptime`; 
     print $q->p(gettext("Stats :\n")),$q->p($uptime);
 
-##Start to check linux raid status    
+##Start to check linux raid status and display the content 
     my $Raidcheck = `/bin/cat /proc/mdstat`;
     if ( $Raidcheck =~ "raid")
 {
@@ -327,9 +327,11 @@ sub accueil
     my @raidstatus = "$result - $dev [$stat] has $devs_up of $devs_total devices active (active=$active_devs{$dev} failed=$failed_devs{$dev} spare=$spare_devs{$dev})\n";
     foreach my $raid (@raidstatus)
         {
+        #if the raid is degraded (but not failed) on one drive then we get the orange colour, else green
               if ( $raid =~ ("CRITICAL" && "failed=none") ){
             print $q->table( $q->td($q->td({bgcolor=>(($raid =~ "CRITICAL")?"orange":"#32CD32")},$raid)));}
 
+        #if the raid is degraded and failed on drive(s) then we get the red colour, else green
               elsif ( $raid =~ ("CRITICAL" && "_") ){
             print $q->table ($q->td($q->td({bgcolor=>(($raid =~ "CRITICAL")?"red":"#32CD32")},$raid)));}
         }
@@ -603,7 +605,7 @@ sub showConf
         	esmith::cgi::genNameValueRow($q,gettext("First sensor (cpu)"),'SensorsTag1',$params{'SensorsTag1'}),
         	esmith::cgi::genNameValueRow($q,gettext("Second sensor (motherboard)"),'SensorsTag2',$params{'SensorsTag2'}),
         	esmith::cgi::genNameValueRow($q,gettext("Third sensor (fan)"),'SensorsTagFan',$params{'SensorsTagFan'}),
-                esmith::cgi::genNameValueRow($q,gettext("Fourth sensor (fan2)"),'SensorsTagFan2',$params{'SensorsTagFan2'}),
+                esmith::cgi::genNameValueRow($q,gettext("Fourth sensor (fan)"),'SensorsTagFan2',$params{'SensorsTagFan2'}),
 
 	    	$q->end_table,$q->hr({width=>'50%'});
         
@@ -1474,41 +1476,9 @@ sub showHardGraph
                 "COMMENT:\\n");
     
     #creation du graphe des temperatures
-	#createShowGraph(gettext("Hardware temperatures (Processor, motherboard, hard disks)."),"temperature",@tab);
          createShowGraph(gettext("Hardware temperatures (Processor, motherboard)."),"temperature",@tab);
 
-#   my $has_second_hd=1;
-#    $has_second_hd=0 if ($params{'hd2'} eq '');
-
-
-
-#        my @tab=("--title=".gettext("Temperatures"),
-#                "--vertical-label=T°C",
-#                "--start=$start",
-#                "DEF:t1=$rrddir/sensors.rrd:t1:AVERAGE",    "DEF:maxt1=$rrddir/sensors.rrd:t1:MAX", "DEF:mint1=$rrddir/sensors.rrd:t1:MIN",
-#                "DEF:t2=$rrddir/sensors.rrd:t2:AVERAGE",    "DEF:maxt2=$rrddir/sensors.rrd:t2:MAX",     "DEF:mint2=$rrddir/sensors.rrd:t2:MIN",
-#                "DEF:thd1=$rrddir/sensors.rrd:thd1:AVERAGE",    "DEF:maxthd1=$rrddir/sensors.rrd:thd1:MAX",     "DEF:minthd1=$rrddir/sensors.rrd:thd1:MIN");
-#
-#    push @tab, "DEF:thd2=$rrddir/sensors.rrd:thd2:AVERAGE",     "DEF:maxthd2=$rrddir/sensors.rrd:thd2:MAX",     "DEF:minthd2=$rrddir/sensors.rrd:thd2:MIN" if ($has_second_hd);
-#    push @tab, "COMMENT:    ",     "LINE2:t1#1000FF:Temp 1 ",      "LINE2:t2#00EEBB:Temp 2 ",       "LINE2:thd1#CC5500:Temp hd 1 ";
-#    push @tab, "LINE2:thd2#550000:Temp hd 2" if ($has_second_hd);
-#    push @tab, "COMMENT:\\n", "COMMENT:Max\\: ",    "GPRINT:maxt1:MAX:%5.2lf °C",       "GPRINT:maxt2:MAX:%5.2lf °C  ", "GPRINT:maxthd1:MAX:%5.2lf °C     ";
-#    push @tab, "GPRINT:maxthd2:MAX:%5.2lf °C" if ($has_second_hd);
-#    push @tab, "COMMENT:\\n", "COMMENT:Min\\: ",        "GPRINT:mint1:MIN:%5.2lf °C",   "GPRINT:mint2:MIN:%5.2lf °C  ", "GPRINT:minthd1:MIN:%5.2lf °C     ";
-#    push @tab, "GPRINT:minthd2:MIN:%5.2lf °C" if ($has_second_hd);
-#    push @tab, "COMMENT:\\n", "COMMENT:Avg\\: ",        "GPRINT:t1:AVERAGE:%5.2lf °C",  "GPRINT:t2:AVERAGE:%5.2lf °C  ","GPRINT:thd1:AVERAGE:%5.2lf °C     ";
-#    push @tab, "GPRINT:thd2:AVERAGE:%5.2lf °C" if ($has_second_hd);
-#    push @tab, "COMMENT:\\n", "COMMENT:Last\\:",        "GPRINT:t1:LAST:%5.2lf °C",         "GPRINT:t2:LAST:%5.2lf °C  ",       "GPRINT:thd1:LAST:%5.2lf °C     ";
-#    push @tab, "GPRINT:thd2:LAST:%5.2lf °C" if ($has_second_hd);
-#    push @tab, "COMMENT:\\n";
-
-    #creation du graphe des temperatures
-#         createShowGraph(gettext("Hardware temperatures (Processor, motherboard, hard disks)."),"temperature",@tab);
- 
-
-
-
-
+    #start to retrieve data for the hard disks sensors
 
    my $has_second_hd=1;
    $has_second_hd=0 if ($params{'hd2'} eq '');
@@ -1520,10 +1490,6 @@ sub showHardGraph
    $has_fifth_hd=0 if ($params{'hd5'} eq '');
    my $has_sixth_hd=1;
    $has_sixth_hd=0 if ($params{'hd6'} eq '');
-
-
-
-
 
 
         my @HDtab=("--title=".gettext("Hard-disks Temperatures"),
@@ -1570,7 +1536,8 @@ sub showHardGraph
     #creation du graphe des temperatures
          createShowGraph(gettext("Hard disks temperatures."),"HD temperature",@HDtab);
 
-    
+    #start to retrieve data for the Fan speed
+
  my $has_second_fan=1;
     $has_second_fan=0 if ($params{'SensorsTagFan2'} eq '');
 
@@ -1592,21 +1559,10 @@ sub showHardGraph
    push @tabfan, "GPRINT:fspd2:LAST:%5.0lf ".gettext("Rpm") if ($has_second_fan);
    push @tabfan, "COMMENT:\\n";
    
+    #creation of the fan speed sensors
         createShowGraph(gettext("Processor fan speed."),"fanspeed",@tabfan);
 
-#    createShowGraph(gettext("Processor fan speed."),"fanspeed",
-#		"--title=".gettext("Fan speed"),
-#		"--vertical-label=".gettext("Rpm"),
-#		"--start=$start",
-#		"DEF:fspd=$rrddir/sensors.rrd:fspd:AVERAGE","DEF:maxfspd=$rrddir/sensors.rrd:fspd:MAX","DEF:minfspd=$rrddir/sensors.rrd:fspd:MIN",
-#                "DEF:fspd2=$rrddir/sensors.rrd:fspd2:AVERAGE","DEF:maxfspd2=$rrddir/sensors.rrd:fspd2:MAX","DEF:minfspd2=$rrddir/sensors.rrd:fspd2:MIN",
-#
-#		"COMMENT:    ",     "LINE2:fspd#1000FF:".gettext("Fan speed"),	"LINE2:fspd2#00EEBB:".gettext("Fan speed"), "COMMENT:\\n",
-#		"COMMENT:Max\\: ",    "GPRINT:maxfspd:MAX:%5.0lf ".gettext("Rpm"),	            "COMMENT:\\n",
-#		"COMMENT:Min\\: ",	"GPRINT:minfspd:MIN:%5.0lf ".gettext("Rpm"),	            "COMMENT:\\n",
-#		"COMMENT:Avg\\: ",	"GPRINT:fspd:AVERAGE:%5.0lf ".gettext("Rpm"),            "COMMENT:\\n",
-#		"COMMENT:Last\\:",	"GPRINT:fspd:LAST:%5.0lf ".gettext("Rpm"), "COMMENT:\\n");
-    
+   
     print $q->p($q->a ({href => "$progname"},gettext("Back\n")));
 }
 #----------------------------------------------------------------

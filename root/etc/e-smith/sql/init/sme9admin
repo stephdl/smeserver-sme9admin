@@ -17,13 +17,25 @@ else
 fi
 
 # rrd
-if [ -d /var/lib/sme9admin ] && [ ! -d /var/lib/sme9admin ]; then
-    echo "Migrating existing sme6admin RRDs files."
-    cp -vr /var/lib/sme9admin /var/lib/sme9admin
-elif [ -d /var/lib/sme9admin ]; then
-    # c'est une upgrade, rien de particulier a faire
-    echo ''
-else
+
+    #ADD more DS for version 1.5-10
+    #first we test if these DS are already in the sensors.rrd   
+    if [[ -f /var/lib/sme9admin/sensors.rrd ]]; then
+     rrdtool dump /var/lib/sme9admin/sensors.rrd > /tmp/new_file.xml
+     testDS=$(grep -w 'fspd2\|thd3\|thd4\|thd5\|thd6' /tmp/new_file.xml)
+     rm -f /tmp/new_file.xml
+    fi
+    # then since the DS are not in the sensors.rrd we create it
+    if [[ -d /var/lib/sme9admin ]] && [[ ! $testDS ]]; then
+       #if (fspd2,thd3,thd4,thd5,thd6) don't exist, then we create it without nuked the data already existent
+       /usr/share/doc/smeserver-sme9admin/add_ds_to_rrd.pl /var/lib/sme9admin sensors.rrd fspd2:GAUGE:600:0:10000
+       /usr/share/doc/smeserver-sme9admin/add_ds_to_rrd.pl /var/lib/sme9admin sensors.rrd thd3:GAUGE:600:0:100
+       /usr/share/doc/smeserver-sme9admin/add_ds_to_rrd.pl /var/lib/sme9admin sensors.rrd thd4:GAUGE:600:0:100
+       /usr/share/doc/smeserver-sme9admin/add_ds_to_rrd.pl /var/lib/sme9admin sensors.rrd thd5:GAUGE:600:0:100
+       /usr/share/doc/smeserver-sme9admin/add_ds_to_rrd.pl /var/lib/sme9admin sensors.rrd thd6:GAUGE:600:0:100
+
+
+   elif [[ ! -d /var/lib/sme9admin ]]; then
     #si c'est une freshinstall on cree les rrd
     sh /usr/share/doc/smeserver-sme9admin/create-rrd.sh
-fi
+   fi

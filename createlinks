@@ -19,3 +19,23 @@ safe_symlink("/etc/e-smith/web/panels/manager/html/sme9admin", "root/etc/e-smith
 
 # Logrotate
 event_link("sme9admin-parselog","logrotate","15");
+#Creation of the event sme9admin-update
+for my $event (qw(
+     sme9admin-update
+    ))
+    
+    {
+    safe_symlink("start", "root/etc/e-smith/events/$event/services2adjust/mysql.init");
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/sme9admind");
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/lm_sensors");
+    }
+#integration of event for console-save & bootstrap-console-save
+for my $event (qw(
+      console-save
+    ))
+
+    {
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/sme9admind");
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/lm_sensors");
+    }
+

@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 9
+%define release 10
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -32,6 +32,12 @@ Obsoletes: smeserver-sme8admin
 AutoReqProv: no
 
 %changelog
+* Sat Nov 22 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-10.sme
+- added a second fan speed sensors
+- added four HD TEMP sensors
+- added a new graph only for hd temperature sensor
+- added a tab to check the raid status 
+
 * Sun Nov 16 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-9.sme
 - Changed in sme9admind L937 °C in .{1,2} .... Thanks JPP
 
@@ -110,3 +116,4 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %attr(755,root,root) /etc/e-smith/sql/init/sme9admin
 %attr(755,root,root) /usr/bin/sme9admind
+%attr(755,root,root) /usr/share/doc/smeserver-sme9admin/add_ds_to_rrd.pl
