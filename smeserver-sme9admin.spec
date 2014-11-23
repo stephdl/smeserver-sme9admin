@@ -36,6 +36,7 @@ AutoReqProv: no
 - added a second fan speed sensors
 - added four HD TEMP sensors
 - added a new graph only for hd temperature sensor
+- added an event sme9admin-update for avoiding to restart the server
 - added a tab to check the raid status 
 
 * Sun Nov 16 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-9.sme
