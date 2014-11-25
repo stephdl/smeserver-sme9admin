@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 10
+%define release 11
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -32,6 +32,9 @@ Obsoletes: smeserver-sme8admin
 AutoReqProv: no
 
 %changelog
+* Tue Nov 25 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-11.sme
+- Added a restart to sme9admind when settings are changed in the sme9admin panel
+
 * Sat Nov 22 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-10.sme
 - added a second fan speed sensors
 - added four HD TEMP sensors

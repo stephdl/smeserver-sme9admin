@@ -27,7 +27,6 @@ use POSIX;
 use Locale::gettext;
 
 ##raid status
-use strict;
 use Getopt::Long;
 #----------------------------------------------------------------
 #declaration de variables globales
@@ -737,7 +736,9 @@ sub changeOk
 	    {	
 	    
 	        #si un param a ete change, on notifie le demon avec un -SIGHUP
-            `pkill -SIGHUP sme9admind`;
+           # `pkill -SIGHUP sme9admind`;
+           #notify the deamon is not enough we want to restart it when parameters are changed
+           system ('service sme9admind restart  2>&1 1>/dev/null') == 0 or die 'ERROR: the service sme9admind can not be restarted';
 
             print $q->table({-class =>"sme-borders"},
                 $q->Tr(
