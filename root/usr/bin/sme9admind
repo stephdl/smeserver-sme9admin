@@ -645,7 +645,7 @@ sub parse_logs {
                 #Baux DHCP
                 #/var/log/messages:Nov 28 19:34:14 sme7b5 dhcpd: DHCPACK on 192.168.1.250 to 00:e0:4c:39:03:a5 via eth0
                 #Match: mmm dd hh:mm:ss hostname dhcpd: DHCPACK on ip    to mac via eth0
-                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName dhcpd: DHCPACK on (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) to ([0-9a-f:]{17}) via/o) {
+                if($l =~ /(\w{3}\s{1,2}\d{1,2} [0-9:]{8}) $SystemName dhcpd: DHCPACK on (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}) to ([0-9a-f:]{17}) \(([0-9a-zA-Z-]+)\) via/o) {
                     #$1:mois jour heure $2.$3.$4.$5:ip $6:mac
                     my $ip=ipdot2ipnum($2,$3,$4,$5);
                     my $hostname=ip2host("$2.$3.$4.$5");
