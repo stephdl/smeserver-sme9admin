@@ -435,6 +435,10 @@ sub parse_logs {
     # ici on met a jour volume connexion meme si pas fini si pppoe et si pas trouvé de fin dans log
     my $smedb=esmith::ConfigDB->open;
     my $ppoeif = $smedb->get("ExternalInterface")->prop('Name');
+
+    #for sme9 in server-only, the external interface is set to none
+    if ($ppoeif ne 'none') {
+
     my $recBytes=`cat /proc/net/dev|grep $ppoeif|cut -d ':' -f2|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d ' ' -f1`;
     my $senBytes=`cat /proc/net/dev|grep $ppoeif|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d " " -f9`;
 
@@ -452,7 +456,9 @@ sub parse_logs {
 	    #print "requete a executer : $requete1 \n";
 	    execute_sql_query($requete1);
 	    }
+    }
     # on fait de même pour les conenxions VPN
+    if ( glob("/var/run/ppp[0-9]*.pid")){
     foreach  my $mypid (`ls /var/run/ppp[0-9]*.pid`){
 	$mypid =~ /\/var\/run\/(ppp[0-9]*).pid/;
 	my $vpnif = $1;
@@ -462,15 +468,14 @@ sub parse_logs {
     		my $senBytes=`cat /proc/net/dev|grep $vpnif|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d " " -f9`;
 
 	    	my $reslt1=execute_sql_query("SELECT * FROM vpn WHERE pid_pppd='$mypid'");
-	
 	    	if ($reslt1 != "0E0")    {
             		my $requete1="UPDATE vpn SET volume_out=$senBytes, volume_in=$recBytes, fin=now() where pid_pppd=$mypid  ORDER BY debut DESC LIMIT 1;";
             		#print "requete a executer : $requete1 \n";
             		execute_sql_query($requete1);
             		}
 		}
-    }
-
+       }
+   }
 
 
 
@@ -1159,7 +1164,7 @@ sub get_sar {
 
 # cette fonction calcule l'occupation cpu/mem des processus correspondants aux services http/samba/afp/squid
 sub get_proc {
-    my %services=( "httpd" => "httpd-admin httpd-e-smith",
+    my %services=( "httpd" => "httpd-admin httpd",
                    "samba" => "nmbd smbd",
                    "afp"   => "atalkd afpd papd cnid_metad", #ajout de cnid_metad
                    "squid" => "squid \\(unlinkd\\)"); #suppression de (squid)
@@ -1177,7 +1182,7 @@ sub get_proc {
             ${$svc.'_mem'}=0;
             ${$svc.'_cpu'}=0;
 
-            my @lines=`/bin/ps h o \%cpu,\%mem p $pids`;
+            my @lines=`/bin/ps h o \%cpu,\%mem p $pids` if ($pids ne '');#sometime $pids is empty
 
             foreach(@lines) {
                 my $line=$_;

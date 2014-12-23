@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 12
+%define release 13
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -32,6 +32,10 @@ Obsoletes: smeserver-sme8admin
 AutoReqProv: no
 
 %changelog
+* Tue Dec 23 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-13.sme
+- Corrected bug of empty pids [SME:8732]
+- Added exeption if the server is not in server & gateway [SME:8739]
+
 * Thu Dec 11 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-12.sme
 - corrected the dhcpd lease not reported  [SME:8724]
 
