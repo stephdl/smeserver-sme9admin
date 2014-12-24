@@ -7,7 +7,7 @@ Summary: A graphical monitor, alert raising, and services supervision tool for y
 %define name smeserver-sme9admin
 Name: %{name}
 %define version 1.5
-%define release 13
+%define release 14
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -32,6 +32,9 @@ Obsoletes: smeserver-sme8admin
 AutoReqProv: no
 
 %changelog
+* Wed Dec 24 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-14.sme
+- changed  $mypid = `cat $mypid` by open(FIC,"<$mypid") [SME:8740]
+
 * Tue Dec 23 2014 stephane de labrusse <stephdl@de-labrusse.fr> 1.5-13.sme
 - Corrected bug of empty pids [SME:8732]
 - Added exeption if the server is not in server & gateway [SME:8739]

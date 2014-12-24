@@ -462,7 +462,10 @@ sub parse_logs {
     foreach  my $mypid (`ls /var/run/ppp[0-9]*.pid`){
 	$mypid =~ /\/var\/run\/(ppp[0-9]*).pid/;
 	my $vpnif = $1;
-	$mypid = `cat $mypid`;
+        open(FIC,"<$mypid") or die("open: $!");
+        $mypid = <FIC>;
+        chomp $mypid;
+        close FIC;
 	if ($vpnif ne $ppoeif  ) {
     		my $recBytes=`cat /proc/net/dev|grep $vpnif|cut -d ':' -f2|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d ' ' -f1`;
     		my $senBytes=`cat /proc/net/dev|grep $vpnif|tr -s ' '| sed -e 's/^[ \t]*//'|cut -d " " -f9`;
